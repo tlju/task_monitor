@@ -1,0 +1,16 @@
+{% extends 'template.html' %}
+{% block body %}
+    <table id="ployTable" lay-filter="ployTable" class="layui-table"></table>
+    <script type="text/javascript">
+        layui.use(['table'], function () {
+            var $ = layui.$, table = layui.table;
+            table.render({
+                elem: '#ployTable',
+                id: '#ployTable',
+                method: 'POST',
+                url: '/monitor/data/?code=15',
+                cols: [[{field: 'task', title: '所属任务'}, {field: 'type', title: '任务策略'}, {field: 'time_set', title: '时间设置'}]]
+            });
+        });
+    </script>
+{% endblock %}

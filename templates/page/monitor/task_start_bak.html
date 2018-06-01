@@ -1,0 +1,94 @@
+{% extends 'template.html' %}
+{% block head_js %}
+    <!--<script type="text/javascript" src="https://cdn.bootcss.com/reconnecting-websocket/1.0.0/reconnecting-websocket.js"></script>-->
+{% endblock %}
+{% block body %}
+    <div class="layui-card">
+        <div class="layui-card-body layui-text">
+            <form class="layui-form layui-form-pane" lay-filter="taskstartPanel" id="taskstartPanelForm">
+                <div class="layui-form-item">
+                    <button class="layui-btn layui-btn-sm" lay-submit="" lay-filter="task_start" id="task_start">启动任务</button>
+                </div>
+                <!--<div class="layui-form-item">
+                    <button class="layui-btn layui-btn-sm" lay-submit="" lay-filter="stop_log" id="stop_log">stop_log</button>
+                </div>-->
+                <div class="layui-form-item">
+                    <label class="layui-form-label">选择任务</label>
+                    <div class="layui-input-block">
+                        <select id="tasklist" lay-filter="tasklist"></select>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="layui-fluid">
+        <fieldset class="layui-elem-field">
+            <legend>运行日志</legend>
+            <div id="menu" class="toolbar" style="display: none"></div>
+            <div id="display_log" style="height: 600px;max-height: 630px" class="text">
+                <!--<span style="font-size:10pt; color:#ff0000;">日志</span><br/>-->
+            </div>
+        </fieldset>
+    </div>
+    <script type="application/javascript">
+        layui.use(['form', 'table', 'laydate', 'layer', 'layedit'], function () {
+            var form = layui.form, laydate = layui.laydate, table = layui.table, layer = layui.layer, $ = layui.$;
+            $.ajax({
+                url: '/monitor/data/?code=2', type: 'POST',
+                //data:'{"condition":{"type":"1","up":0}}',
+                data: {condition: '{"type":"1","up":0}'},
+                success: function (obj) {
+                    var objs = JSON.parse(obj).data;
+                    $('#tasklist').empty().append('<option value="">请选择任务</option>');
+                    for (var i in objs) {
+                        $('#tasklist').append("<option value=" + objs[i].no + ">" + objs[i].name + " - " + objs[i].content + "</option>");
+                    }
+                    form.render();
+                }
+            });
+            form.on('submit(task_start)', function () {
+                $.ajax({
+                    url: '/monitor/start/', type: 'POST', data: {'no': $('#tasklist').val()}, success: function () {
+                        layer.msg('任务启动...');
+                    }
+                });
+                return false;
+            });
+        });
+    </script>
+    <script type="text/javascript" src="/static/js/wangEditor.js"></script>
+    <script type="text/javascript">
+        var E = window.wangEditor;
+        var editor = new E('#menu', '#display_log');  // 两个参数也可以传入 elem 对象，class 选择器
+        editor.customConfig.zIndex = 50;
+        editor.create();
+        // 禁用编辑功能
+        editor.$textElem.attr('contenteditable', false);
+
+        if (window.s) {
+            window.s.close();
+        }
+        var socket = new WebSocket("ws://" + window.location.host + "/monitor/echo/");
+        socket.onopen = function () {
+            console.log('WebSocket open');//成功连接上Websocket
+        };
+        socket.onmessage = function (e) {
+            if (e.data.indexOf('ERROR:') >= 0) {
+                editor.txt.append('<span style="font-size:15pt; color:#ff0000;">' + e.data + '</span><br/>');
+            } else {
+                editor.txt.append('<span style="font-size:10pt;">' + e.data + '</span><br/>');
+            }
+            editor.$txt.focus();
+        };
+        if (socket.readyState == WebSocket.OPEN) socket.onopen();
+        window.s = socket;
+
+        $('#stop_log').click(function () {
+            if (window.s) {
+                window.s.close();
+                console.log('websocket已关闭');
+            }
+            return false;
+        });
+    </script>
+{% endblock %}

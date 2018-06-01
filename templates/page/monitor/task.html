@@ -1,0 +1,530 @@
+{% extends 'template.html' %}
+{% block body %}
+    <div class="x-body">
+        <div class="layui-row">
+            <div class="layui-col-md3">
+                <form class="layui-form x-so">
+                    <input type="text" name="keyword" placeholder="请输入关键字" autocomplete="off" class="layui-input">
+                    <button class="layui-btn layui-btn-sm" lay-filter="search" lay-submit><i class="layui-icon">&#xe615;</i>搜索</button>
+                </form>
+            </div>
+            <div class="layui-col-md1 layui-col-md-offset8 x-so">
+                <button class="layui-btn layui-btn-sm" lay-filter="add" id="add_task"><i class="layui-icon">&#xe654;</i>新增任务</button>
+            </div>
+        </div>
+        <table class="layui-table" lay-filter="mainTable" id="mainTable"></table>
+        <script type="text/html" id="mainBar">
+            <a class="layui-btn layui-btn-xs" lay-event="addStep"><i class="layui-icon">&#xe654;</i></a><!--添加步骤-->
+            <a class="layui-btn layui-btn-xs" lay-event="delTask"><i class="layui-icon">&#xe640;</i></a><!--删除任务-->
+        </script>
+        <script type="text/html" id="stepBar">
+            <a class="layui-btn layui-btn-xs" lay-event="editStep"><i class="layui-icon">&#xe642;</i></a><!--编辑步骤-->
+            <a class="layui-btn layui-btn-xs" lay-event="delStep"><i class="layui-icon">&#xe640;</i></a><!--删除步骤-->
+        </script>
+        <script type="text/html" id="ployTpl">
+            <select>
+                <option value="">-</option>
+                <option value="1">秒</option>
+                <option value="2">分钟</option>
+            </select>
+        </script>
+    </div>
+    <script type="application/javascript">
+        layui.use(['form', 'table', 'laydate', 'layer'], function () {
+            var form = layui.form, laydate = layui.laydate, table = layui.table, layer = layui.layer, $ = layui.$;
+            var active_task = -1;
+            var active_task_id = -1;
+            var active_taskconfig_id = -1;
+            var active_step = -1;
+            var active_step_id = -1;
+            var active_function = -1;
+            var active_function_name = '';
+            var html_text = '';
+
+            table.render({
+                elem: '#mainTable',
+                id: "mainTable",
+                method: 'POST',
+                url: '/monitor/data/?code=2',
+                height: 'full-170',
+                limits: [10, 30, 60, 100],
+                limit: 10,
+                cellMinWidth: 200,
+                where: {condition: '{"type":"1","up":0}', columns: '', keyword: ''},
+                cols: [[{field: 'no', title: '编号', align: 'center', width: 80},
+                    {field: 'name', title: '名称', edit: 'text', width: 200},
+                    {field: 'content', title: '操作说明', edit: 'text', width: 250},
+                    {field: 'param', title: '附加参数', event: 'setParam'},
+                    {field: 'ploy', title: '执行策略', edit: 'text', width: 80},
+                    {field: 'time_set', title: '时间设置', edit: 'text', width: 80},
+                    {field: 'remark', title: '备注', edit: 'text', width: 150},
+                    {title: '操作', align: 'center', toolbar: '#mainBar', width: 160}
+                ]],
+                page: true
+            });
+
+            form.on('submit(search)', function (data) {
+                table.reload('mainTable', {
+                    method: 'POST',
+                    where: {condition: '{"type":"1","up":0}', columns: 'no,name,content,param,remark', keyword: data.field.keyword}
+                });
+                return false;
+            });
+
+            $('#add_task').on('click', function () {
+                $('#radio_step').attr('disabled', true);
+                $('#radio_task').attr('checked', true);
+                form.render();
+                index1 = layer.open({
+                    type: 1,
+                    title: '新增任务',
+                    area: ['800px', '625px'],
+                    content: $('#taskPanel')
+                });
+            });
+
+            form.on('submit(sb_task)', function (data) {
+                //console.log(data.field);
+                //console.log('{"id":"","condition":' + JSON.stringify(data.field) + '}');
+                $.ajax({
+                    url: '/monitor/update/?code=2',
+                    type: 'POST',
+                    data: '{"id":"","condition":' + JSON.stringify(data.field) + '}',
+                    success: function () {
+                        layer.alert('保存成功！', {icon: 1});
+                        layer.close(index1);
+                        table.reload('mainTable'); //刷新表格，解决打开form不是新提交的数据
+                    }
+                });
+                return false;
+            });
+
+            table.on('edit(mainTable)', function (obj) {
+                var value = obj.value, //得到修改后的值
+                    data = obj.data, //得到所在行所有键值
+                    field = obj.field; //得到字段
+                $.ajax({
+                    url: '/monitor/update/?code=2',
+                    type: 'POST',
+                    data: '{"id":' + data.id + ',"condition":{"' + field + '":"' + value + '"}}',
+                    success: function () {
+                        layer.msg('已更新~');
+                    }
+                });
+            });
+
+            table.on('tool(mainTable)', function (obj) {
+                var data = obj.data, //得到所在行所有键值
+                    layEvent = obj.event;
+                if (layEvent === 'delTask') {
+                    layer.confirm('确认是否删除任务 ' + data.name + ' ？,会一并删除关联的所有步骤！', {btn: ['是', '否']}, function () {
+                        $.ajax({ //删除
+                            url: '/monitor/delete/?code=2', type: 'POST',
+                            data: '{"id":"","condition":{"type":"2","up":"' + data.no + '"}}'
+                        });
+                        $.ajax({
+                            url: '/monitor/delete/?code=11', type: 'POST',
+                            data: '{"id":"","condition":{"task":"' + data.no + '"}}'
+                        });
+                        $.ajax({
+                            url: '/monitor/delete/?code=2', type: 'POST',
+                            data: '{"id":"' + data.id + '","condition":""}',
+                            success: function () {
+                                layer.msg('已删除~');
+                                table.reload('mainTable');
+                            }
+                        });
+                    });
+                } else if (layEvent === 'setParam') {
+                    index2 = layer.prompt({
+                        formType: 2,
+                        title: '修改 ' + data.name + ' 自定义参数',
+                        value: data.param,
+                        area: ['500px', '300px']
+                    }, function (value, index2) {
+                        layer.close(index2);
+                        $.ajax({
+                            url: '/monitor/update/?code=2',
+                            type: 'POST',
+                            data: '{"id":"' + data.id + '","condition":{"param":' + JSON.stringify(value) + '}}'
+                        });
+                        obj.update({param: value});//同步更新表格和缓存对应的值
+                    });
+                } else if (layEvent === 'addStep') {
+                    index3 = layer.open({
+                        type: 1,
+                        title: '编辑 ' + data.name + ' 步骤',
+                        area: ['1000px', '600px'],
+                        content: $('#stepPanel'),
+                        success: function (index, id) {
+                            table.render({
+                                elem: '#stepTable',
+                                url: '/monitor/data/?code=2',
+                                cellMinWidth: 60,
+                                method: 'POST',
+                                height: 'full-378',
+                                where: {condition: '{"type":"2","up":' + data.no + '}', columns: '', keyword: ''},
+                                cols: [[
+                                    {field: 'no', title: '编号', width: 60, fixed: 'left', align: 'center'},
+                                    {field: 'name', title: '步骤名'},
+                                    {fixed: 'right', title: '操作', width: 160, align: 'center', toolbar: '#stepBar'}
+                                ]],
+                                page: true
+                            });
+                            active_task = data.no;
+                            active_task_id = data.id;
+                        }
+                    });
+                }
+            });
+            $('#add_step').on('click', function () {
+                $('#addStepPanelForm').children("div[name='data-item']").remove();
+                index4 = layer.open({
+                    type: 1,
+                    title: '新增步骤',
+                    area: ['800px', '600px'],
+                    content: $('#addStepPanel'),
+                    success: function () {
+                        $.ajax({
+                            url: '/monitor/data/?code=8',
+                            success: function (obj) {
+                                var objs = JSON.parse(obj);
+                                $('#f_type').empty().append('<option value="" selected="selected">请选择函数分类</option>');
+                                $('#f_func').empty().append('<option value="" selected="selected">请选择功能类别</option>');
+                                for (var i in objs.data) {
+                                    $('#f_type').append("<option value=" + objs.data[i].id + ">" + objs.data[i].name + "</option>");
+                                }
+                                form.render('select', 'addStepPanel'); //更新 lay-filter="addStepPanel" 所在容器内的全部 select 状态
+                            }
+                        });
+                    }
+                });
+            });
+            //二级select联动
+            form.on('select(f_type)', function (obj) {
+                //console.log(obj.value);
+                //$('#addStepPanelForm').remove(html_text);
+                $.ajax({
+                    url: '/monitor/data/?code=9',
+                    type: 'POST',
+                    data: {condition: '{"type":' + obj.value + '}', columns: '', keyword: ''},
+                    success: function (obj) {
+                        var objs = JSON.parse(obj);
+                        $('#f_func').empty().append('<option value="" selected="selected">请选择功能类别</option>');
+                        for (var i in objs.data) {
+                            $('#f_func').append("<option value=" + objs.data[i].id + ">" + objs.data[i].name + "</option>");
+                        }
+                        form.render('select', 'addStepPanel');
+                    }
+                });
+            });
+            //三级联动生成form控件
+            form.on('select(f_func)', function (obj) {
+                $('#addStepPanelForm').children("div[name='data-item']").remove();
+                var value = obj.value;
+                active_function = value;
+                active_function_name = $('#f_func option[value="' + active_function + '"]').text();
+                $.ajax({
+                    url: '/monitor/data/?code=10',
+                    type: 'POST',
+                    data: {condition: '{"no":' + value + '}', columns: '', keyword: ''},
+                    success: function (obj) {
+                        var objs = JSON.parse(obj);
+                        $('#addStepPanelForm').children("div[name='data-item']").remove();
+                        for (var i in objs.data) {
+                            //console.log(objs.data[i]);
+                            html_text = $('<div name="data-item" class="layui-form-item"><label class="layui-form-label">' + objs.data[i].name + '</label><div class="layui-input-block">' +
+                                '<input type="text" id="' + objs.data[i].code + '"name="' + objs.data[i].code + '' +
+                                '"autocomplete="off" class="layui-input"></div></div>');
+                            $('#addStepPanelForm').append(html_text);
+                            var id = objs.data[i].code;
+                            $("#" + id).val(objs.data[i].defaults);
+                        }
+                        form.render(null, 'addStepPanel');
+                    }
+                });
+            });
+            form.on('submit(sb_step)', function (data) {
+                //console.log(data.field);
+                //console.log('{"id":"","condition":' + JSON.stringify(data.field) + '}');
+                //{"id":"","condition":{"word_path":"fd","old_text":"fds","new_text":"gewe"}}
+                $.ajax({
+                    url: '/monitor/update/?code=2',
+                    type: 'POST',
+                    data: '{"id":"","condition":{"name":"' + active_function_name + '","type":"2","up":"' + active_task + '"}}',
+                    success: function () {
+                        //获取步骤编码
+                        $.ajax({
+                            url: '/monitor/data/?code=12',
+                            type: 'POST',
+                            data: {param: '{"type":"2","up":"' + active_task + '"}'},
+                            success: function (obj) {
+                                var objs = JSON.parse(obj);
+                                active_step = objs.data[0].no_max;
+                                //更新任务配置表
+                                $.ajax({
+                                    url: '/monitor/update/?code=11',
+                                    type: 'POST',
+                                    data: '{"id":"","condition":{"task":' + active_task + ',"step":' + active_step + ',"func":' + active_function + ',"value":' + JSON.stringify(data.field) + '}}',
+                                    success: function () {
+                                        layer.alert('{"id":"","condition":{"task":' + active_task + ',"step":' + active_step + ',"func":' + active_function + ',"value":' + JSON.stringify(data.field) + '}}');
+                                        layer.alert('保存成功！', {icon: 1});
+                                        layer.close(index4);
+                                        table.reload('stepTable');
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+                return false;
+            });
+            table.on('tool(stepTable)', function (obj) {
+                var data = obj.data, //得到所在行所有键值
+                    layEvent = obj.event;
+                active_step = data.no;
+                active_step_id = data.id;
+                //layer.msg(active_task + ',' + active_step);
+                if (layEvent === 'editStep') {
+                    //console.log(obj);
+                    //layer.alert(active_task + ' ' + active_step);
+                    index5 = layer.open({
+                        type: 1,
+                        title: '编辑步骤',
+                        area: ['800px', '600px'],
+                        content: $('#editStepPanel'),
+                        success: function () {
+                            $.ajax({
+                                url: '/monitor/data/?code=13', type: 'POST', data: {param: '{"task":"' + active_task + '","step":"' + active_step + '"}'},
+                                success: function (obj) {
+                                    var data = JSON.parse(obj).data[0];
+                                    active_taskconfig_id = data.id;
+                                    $.ajax({
+                                        url: '/monitor/data/?code=8', type: 'POST',
+                                        success: function (obj) {
+                                            var objs = JSON.parse(obj);
+                                            $('#f_type1').empty().append('<option value="">请选择函数分类</option>');
+                                            $('#f_func1').empty().append('<option value="">请选择功能类别</option>');
+                                            for (var i in objs.data) {
+                                                $('#f_type1').append("<option value=" + objs.data[i].id + ">" + objs.data[i].name + "</option>");
+                                                $('#f_type1').val(data.func_type);
+                                            }
+                                            form.render('select', 'editStepPanel'); //更新 lay-filter="addStepPanel" 所在容器内的全部 select 状态
+                                        }
+                                    });
+                                    $.ajax({
+                                        url: '/monitor/data/?code=9', type: 'POST', data: {condition: '{"type":' + data.func_type + '}', columns: '', keyword: ''},
+                                        success: function (obj) {
+                                            var objs = JSON.parse(obj);
+                                            //console.log(objs);
+                                            $('#f_func1').empty().append('<option value="" selected="selected">请选择功能类别</option>');
+                                            for (var i in objs.data) {
+                                                $('#f_func1').append("<option value=" + objs.data[i].id + ">" + objs.data[i].name + "</option>");
+                                                $('#f_func1').val(data.func);
+                                            }
+                                            form.render('select', 'editStepPanel');
+                                        }
+                                    });
+                                    $('#editStepPanelForm').children("div[name='data-item1']").remove();
+                                    $.ajax({
+                                        url: '/monitor/data/?code=10', type: 'POST', data: {condition: '{"no":' + data.func + '}', columns: '', keyword: ''},
+                                        success: function (obj) {
+                                            var objs = JSON.parse(obj);
+                                            $('#editStepPanelForm').children("div[name='data-item1']").remove();
+                                            for (var i in objs.data) {
+                                                html_text = $('<div name="data-item1" class="layui-form-item"><label class="layui-form-label">' + objs.data[i].name + '</label><div class="layui-input-block">' +
+                                                    '<input type="text" id="' + objs.data[i].code + '"name="' + objs.data[i].code + '' +
+                                                    '"autocomplete="off" class="layui-input"></div></div>');
+                                                $('#editStepPanelForm').append(html_text);
+                                                var id = objs.data[i].code;
+                                                var data_value = eval('(' + data.value + ')');
+                                                $("#" + id).val(data_value[id]);
+                                            }
+                                            active_function = data.func;
+                                            active_function_name = $('#f_func1 option[value="' + active_function + '"]').text();
+                                            form.render(null, 'editStepPanel');
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+                    form.on('submit(sb_step1)', function (data) {
+                        //console.log(data.field);
+                        //console.log(active_task, active_step, active_function, active_function_name, active_task_id, active_step_id, active_taskconfig_id);
+                        $.ajax({
+                            url: '/monitor/data/?code=2', type: 'POST',
+                            data: '{"id":"' + active_step_id + '","condition":{"name":"' + active_function_name + '","type":"2","up":"' + active_task + '"}}',
+                            success: function () {
+                                //更新任务配置表
+                                $.ajax({
+                                    url: '/monitor/update/?code=11', type: 'POST',
+                                    data: '{"id":"' + active_taskconfig_id + '","condition":{"task":' + active_task + ',"step":' + active_step + ',"func":' + active_function + ',"value":' + JSON.stringify(data.field) + '}}',
+                                    success: function () {
+                                        layer.alert('{"id":"","condition":{"task":' + active_task + ',"step":' + active_step + ',"func":' + active_function + ',"value":' + JSON.stringify(data.field) + '}}');
+                                        layer.alert('保存成功！', {icon: 1});
+                                        layer.close(index5);
+                                        table.reload('stepTable');
+                                    }
+                                });
+                            }
+                        });
+                        return false;
+                    });
+                } else if (layEvent === 'delStep') {
+                    //console.log(active_step,active_task);
+                    $.ajax({url: '/monitor/delete/?code=11', type: 'POST', data: '{"id":"","condition":{"task":"' + active_task + '","step":"' + active_step + '"}}'});
+                    $.ajax({
+                        url: '/monitor/delete/?code=2', type: 'POST',
+                        data: '{"id":"","condition":{"up":"' + active_task + '","no":"' + active_step + '"}}',
+                        success: function () {
+                            layer.msg('已删除~');
+                            table.reload('stepTable');
+                        }
+                    });
+                }
+            });
+
+            //执行一个laydate实例
+            laydate.render({
+                elem: '#start', //指定元素
+                type: 'month'
+            });
+        });
+    </script>
+{% endblock %}
+{% block hide_layer %}
+    <!-- 隐藏浮层 -->
+    <div id="taskPanel" style="display: none">
+        <div class="layui-card">
+            <div class="layui-card-body layui-text">
+                <form class="layui-form layui-form-pane" lay-filter="taskPanel">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">名称</label>
+                        <div class="layui-input-block">
+                            <input type="text" id="name" name="name" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">操作说明</label>
+                        <div class="layui-input-block">
+                            <input type="text" id="content" name="content" lay-verify="required" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item" pane="">
+                        <label class="layui-form-label">类型</label>
+                        <div class="layui-input-block" lay-filter="radio_type">
+                            <input type="radio" id="radio_task" name="type" value="1" title="任务">
+                            <input type="radio" id="radio_step" name="type" value="2" title="步骤">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">执行策略</label>
+                        <div class="layui-input-block">
+                            <select class="layui-select" name="ploy">
+                                <option value="">请选择</option>
+                                <option value="1">秒</option>
+                                <option value="2">分钟</option>
+                                <option value="3">小时</option>
+                                <option value="4">天</option>
+                                <option value="5">周</option>
+                                <option value="6">周一</option>
+                                <option value="7">周二</option>
+                                <option value="8">周三</option>
+                                <option value="9">周四</option>
+                                <option value="10">周五</option>
+                                <option value="11">周六</option>
+                                <option value="12">周日</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">时间设置</label>
+                        <div class="layui-input-block">
+                            <input type="text" id="time_set" name="time_set" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item layui-form-text">
+                        <label class="layui-form-label">自定义参数</label>
+                        <div class="layui-input-block">
+                            <textarea placeholder="参数例子:@file|文件 = D:/a.doc;参数代码和中文名用 @ 符号开头，用竖线 | 隔开，结尾用英文分号 ; 隔开" class="layui-textarea" id="param" name="param"></textarea>
+                        </div>
+                    </div>
+                    <div class="layui-form-item layui-form-text">
+                        <label class="layui-form-label">备注</label>
+                        <div class="layui-input-block">
+                            <input type="text" id="remark" name="remark" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item layui-input-block">
+                        <button class="layui-btn" lay-submit="" lay-filter="sb_task" id="sb_task">立即提交</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div id="stepPanel" style="display: none">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <button class="layui-btn layui-btn-sm" lay-submit="" lay-filter="add_step" id="add_step">新增步骤</button>
+            </div>
+            <div class="layui-card-body">
+                <table lay-filter="stepTable" id="stepTable"></table>
+            </div>
+        </div>
+    </div>
+    <div id="addStepPanel" style="display: none">
+        <div class="layui-card">
+            <div class="layui-card-body layui-text">
+                <form class="layui-form layui-form-pane" lay-filter="addStepPanel" id="addStepPanelForm">
+                    <div class="layui-form-item">
+                        <button class="layui-btn layui-btn-sm" lay-submit="" lay-filter="sb_step" id="sb_step">提交步骤</button>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">分类</label>
+                        <div class="layui-input-block">
+                            <select id="f_type" lay-filter="f_type">
+                                <option value="" selected="selected">请选择函数分类</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">功能</label>
+                        <div class="layui-input-block">
+                            <select id="f_func" lay-filter="f_func">
+                                <option value="" selected="selected">请选择功能类别</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div id="editStepPanel" style="display: none">
+        <div class="layui-card">
+            <div class="layui-card-body layui-text">
+                <form class="layui-form layui-form-pane" lay-filter="editStepPanel" id="editStepPanelForm">
+                    <div class="layui-form-item">
+                        <button class="layui-btn layui-btn-sm" lay-submit="" lay-filter="sb_step1" id="sb_step1">提交步骤</button>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">分类</label>
+                        <div class="layui-input-block">
+                            <select id="f_type1" lay-filter="f_type1">
+                                <option value="" selected="selected">请选择函数分类</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">功能</label>
+                        <div class="layui-input-block">
+                            <select id="f_func1" lay-filter="f_func1">
+                                <option value="" selected="selected">请选择功能类别</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

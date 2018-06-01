@@ -1,0 +1,54 @@
+{% extends "template.html" %}
+{% block body %}
+<div class="x-body">
+    <div class="layui-row">
+        <form class="layui-form layui-col-md12 x-so">
+            <input class="layui-input" placeholder="开始日" name="start" id="start">
+            <input class="layui-input" placeholder="截止日" name="end" id="end">
+            <input type="text" name="username" placeholder="请输入用户名" autocomplete="off" class="layui-input">
+            <button class="layui-btn" lay-submit="" lay-filter="sreach"><i class="layui-icon">&#xe615;</i></button>
+        </form>
+    </div>
+    <div>
+        <button class="layui-btn layui-btn-danger" onclick="delAll()"><i class="layui-icon"></i>批量删除</button>
+        <button class="layui-btn" onclick="x_admin_show('添加用户','./member-add.html',600,400)"><i class="layui-icon"></i>添加
+        </button>
+        <span class="x-right" style="line-height:40px">共有数据：88 条</span>
+    </div>
+
+
+    <table class="layui-table" lay-data="{height:'full-207', url:'/cmdb/data/?code=4', page:true}">
+        <thead>
+        <tr>
+            <th lay-data="{field:'id', sort: true,width:70}">ID</th>
+            <th lay-data="{field:'name',width:100,sort: true}">用户名</th>
+            <th lay-data="{field:'email',width:150,edit:'text'}">邮箱</th>
+            <th lay-data="{field:'phone',width:150}">电话</th>
+            <th lay-data="{field:'type',width:150}">角色</th>
+            <th lay-data="{field:'memo',width:150}">备注</th>
+            <th lay-data="{field:'create_at',width:150}">创建时间</th>
+            <th lay-data="{field:'update_at',width:150}">更新时间</th>
+        </tr>
+        </thead>
+    </table>
+
+</div>
+<script>
+    layui.use(['table', 'laydate'], function () {
+        var laydate = layui.laydate;
+        var table = layui.table;
+
+        //执行一个laydate实例
+        laydate.render({
+            elem: '#start' //指定元素
+        });
+
+        //执行一个laydate实例
+        laydate.render({
+            elem: '#end' //指定元素
+        });
+
+    });
+
+</script>
+{% endblock %}

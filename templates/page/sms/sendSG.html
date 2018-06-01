@@ -1,0 +1,11 @@
+{% extends 'template.html' %}
+{% block body %}
+    <div>
+        <button class="layui-btn layui-btn-sm" id="send">原始按钮</button>
+    </div>
+    <script type="application/javascript">
+        $('#send').on('click', function () {
+            $.ajax({url: '/monitor/sms/'});
+        });
+    </script>
+{% endblock %}

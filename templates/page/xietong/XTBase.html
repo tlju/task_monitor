@@ -1,0 +1,378 @@
+{% extends "template.html" %}
+{% block body %}
+    <div class="x-body">
+        <div class="layui-row">
+            <form class="layui-form layui-col-md12 x-so">
+                <input class="layui-input" lay-verify="date" placeholder="开始日" name="start" id="start">
+                <div class="layui-inline">
+                    <select class="layui-select" name="sort">
+                        <option value="0">选择类别</option>
+                        <option value="1">资产财务类</option>
+                        <option value="2">资产电商类</option>
+                        <option value="3">生产GIS类</option>
+                        <option value="4">财务生产类</option>
+                        <option value="5">营销生产类</option>
+                        <option value="6">OMS生产类</option>
+                        <option value="7">人资财务类</option>
+                        <option value="8">财务培评类</option>
+                        <option value="9">人资培评类</option>
+                    </select>
+                </div>
+                <input type="text" name="keyword" placeholder="请输入指标关键字" autocomplete="off" class="layui-input">
+                <button class="layui-btn" lay-filter="search" lay-submit><i class="layui-icon">&#xe615;</i>搜索</button>
+                <button class="layui-btn" lay-filter="excel" lay-submit><i class="layui-icon">&#xe601;</i>下载</button>
+                <a class="layui-btn" id="refresh"><i class="layui-icon">&#x1002;</i>更新</a>
+            </form>
+        </div>
+
+        <div align="center" style="font-size: 30px">广东电网有限责任公司协同应用工作报告（省公司）</div>
+
+        <table class="layui-table"
+               lay-data="{height:'full-199', url:'/cmdb/data/?code=2', limits:[17,30,60,100], limit:17, page:true, id:'mainTable', size:'sm'}"
+               lay-filter="mainTable">
+            <thead>
+            <tr>
+                <th lay-data="{field:'xh', width:80,align:'center',fixed:'left'}" rowspan="2">场景序号</th>
+                <th lay-data="{field:'date',width:100}" rowspan="2">日期</th>
+                <th lay-data="{field:'tjsj',width:150}" rowspan="2">提交时间</th>
+                <th lay-data="{field:'xtcjfl',width:120}" rowspan="2">协同场景分类</th>
+                <th lay-data="{field:'dyxtcj',width:200}" rowspan="2">对应协同场景</th>
+                <th lay-data="{field:'zbx',width:200}" rowspan="2">指标项</th>
+                <th lay-data="{field:'zbz',width:70,align:'center'}" rowspan="2">指标值</th>
+                <th lay-data="{align:'center'}" colspan="6">发起方</th>
+                <th lay-data="{align:'center'}" colspan="6">接收方</th>
+                <th lay-data="{field:'dfbz',width:100,align:'center'}" rowspan="2">得分标准</th>
+                <th lay-data="{field:'mbdf',width:100,align:'center'}" rowspan="2">目标得分</th>
+                <th lay-data="{field:'qtf',width:100}" rowspan="2">牵头方</th>
+                <th lay-data="{field:'sfddbz',width:120,align:'center'}" rowspan="2">是否达到标准</th>
+                <th lay-data="{field:'sfddmb',width:120,align:'center'}" rowspan="2">是否达到目标</th>
+                <th lay-data="{fixed: 'right', field:'df',width:70,align:'center'}" rowspan="2">得分</th>
+                <th lay-data="{fixed: 'right', field:'cgl',width:80,align:'center'}" rowspan="2">成功率</th>
+                <th lay-data="{fixed: 'right', width: 120, align: 'center', toolbar: '#barDemo'}" rowspan="2">解决方案</th>
+            </tr>
+            <tr>
+                <th lay-data="{field:'f_xtmc', width:100}">系统名称</th>
+                <th lay-data="{field:'f_sjjk', width:200}">涉及接口</th>
+                <th lay-data="{field:'f_zs', width:85,align:'center',edit:'text'}">总数</th>
+                <th lay-data="{field:'f_cgs', width:85,align:'center',edit:'text'}">成功数</th>
+                <th lay-data="{field:'f_sbs', width:85,align:'center',edit:'text'}">失败数</th>
+                <th lay-data="{field:'f_ycgdxx', width:140,align:'center', templet:'#gongdan'}">异常工单信息</th>
+                <th lay-data="{field:'j_xtmc', width:100}">系统名称</th>
+                <th lay-data="{field:'j_sjjk', width:200}">涉及接口</th>
+                <th lay-data="{field:'j_zs', width:85,align:'center',edit:'text'}">总数</th>
+                <th lay-data="{field:'j_cgs', width:85,align:'center',edit:'text'}">成功数</th>
+                <th lay-data="{field:'j_sbs', width:85,align:'center',edit:'text'}">失败数</th>
+                <th lay-data="{field:'j_ycgdxx', width:140,align:'center',templet:'#gongdan2'}">异常工单信息</th>
+            </tr>
+            </thead>
+        </table>
+
+        <script type="text/html" id="barDemo">
+            <a class="layui-btn layui-btn-primary layui-btn-mini" lay-event="detail">查看</a>
+            <a class="layui-btn layui-btn-mini" lay-event="edit">编辑</a>
+        </script>
+
+    </div>
+    <div id="viewPanel" style="display: none">
+        <fieldset class="layui-elem-field">
+            <legend>问题原因分析</legend>
+            <div class="layui-field-box">
+                <blockquote class="layui-elem-quote layui-quote-nm">
+                    <p id="wtyyfx"></p>
+                </blockquote>
+            </div>
+        </fieldset>
+        <fieldset class="layui-elem-field">
+            <legend>整改措施</legend>
+            <div class="layui-field-box">
+                <blockquote class="layui-elem-quote layui-quote-nm">
+                    <p id="zgcs"></p>
+                </blockquote>
+            </div>
+        </fieldset>
+        <fieldset class="layui-elem-field">
+            <legend>整改进展</legend>
+            <div class="layui-field-box">
+                <blockquote class="layui-elem-quote layui-quote-nm">
+                    <p id="zgjz"></p>
+                </blockquote>
+            </div>
+        </fieldset>
+    </div>
+    <div id="editPanel" style="display: none">
+        <fieldset class="layui-elem-field">
+            <form class="layui-form layui-form-pane">
+                <div class="layui-field-box">
+                    <blockquote class="layui-elem-quote layui-quote-nm">
+                        <div class="layui-form-item layui-form-text">
+                            <label class="layui-form-label">问题原因分析</label>
+                            <div class="layui-input-block">
+                                <textarea class="layui-textarea layui-hide" name="q_wtyyfx" lay-verify="content"
+                                          id="q_wtyyfx"></textarea>
+                            </div>
+                        </div>
+                        <div class="layui-form-item layui-form-text">
+                            <label class="layui-form-label">整改措施</label>
+                            <div class="layui-input-block">
+                                <textarea class="layui-textarea layui-hide" name="q_zgcs" lay-verify="content"
+                                          id="q_zgcs"></textarea>
+                            </div>
+                        </div>
+                        <div class="layui-form-item layui-form-text">
+                            <label class="layui-form-label">整改进展</label>
+                            <div class="layui-input-block">
+                                <textarea class="layui-textarea layui-hide" name="q_zgjz" lay-verify="content"
+                                          id="q_zgjz"></textarea>
+                            </div>
+                        </div>
+                    </blockquote>
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button class="layui-btn" lay-submit="" lay-filter="sb_commit">立即提交</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </fieldset>
+    </div>
+    {% verbatim %}
+    <!-- 这段之间的不使用服务器引擎解析 -->
+    <script type="text/html" id="gongdan">
+        {{#  if (d.f_sbs == 0) { }}
+        <span class="layui-badge layui-bg-blue">无异常</span>
+        {{#  } else { }}
+        {{#  if (d.f_ycgdxx.length == 0) { }}
+        <button type="button" class="layui-btn layui-btn-mini up_f_file" id="up_f_{{ d.xh }}"
+                lay-data="{url:'/cmdb/upload/?code=2&send=f&id={{ d.xh }}',accept: 'file',multiple: true, exts:'xls|xlsx'}">
+            <i class="layui-icon">&#xe67c;</i>上传异常清单
+        </button>
+        {{#  } else { }}
+        <span class="layui-badge layui-bg-orange">已导入</span>
+        <a id="f_delete" class="layui-btn layui-btn-mini f_delete" onclick="f_del('{{ d.xh }}')">重导</a>
+        {{#  } }}
+        {{#  } }}
+    </script>
+    <script type="text/html" id="gongdan2">
+        {{#  if (d.j_sbs == 0) { }}
+        <span class="layui-badge layui-bg-blue">无异常</span>
+        {{#  } else { }}
+        {{#  if (d.j_ycgdxx.length == 0) { }}
+        <button type="button" class="layui-btn layui-btn-mini up_j_file" id="up_j_{{ d.xh }}"
+                lay-data="{url:'/cmdb/upload/?code=2&send=j&id={{ d.xh }}',accept: 'file',multiple: true, exts:'xls|xlsx'}">
+            <i class="layui-icon">&#xe67c;</i>上传异常清单
+        </button>
+        {{#  } else { }}
+        <span class="layui-badge layui-bg-orange">已导入</span>
+        <a id="j_delete" class="layui-btn layui-btn-mini j_delete" onclick="j_del('{{ d.xh }}')">重导</a>
+        {{#  } }}
+        {{#  } }}
+    </script>
+    {% endverbatim %}
+    <script type="text/javascript">
+        function f_del(data) {
+            var edit_data = '{"f_ycgdxx":""}';
+            $.ajax({
+                url: '/cmdb/delete/?code=2&id=' + data,
+                type: 'POST',
+                data: edit_data,
+                success: function () {
+                    window.location.reload(); //刷新当前页面
+                }
+            });
+        };
+
+        function j_del(data) {
+            var edit_data = '{"j_ycgdxx":""}';
+            $.ajax({
+                url: '/cmdb/delete/?code=2&id=' + data,
+                type: 'POST',
+                data: edit_data,
+                success: function () {
+                    window.location.reload(); //刷新当前页面
+                }
+            });
+        };
+
+        layui.use(['form', 'table', 'laydate', 'layer', 'layedit', 'upload'], function () {
+            var form = layui.form,
+                laydate = layui.laydate,
+                table = layui.table,
+                layer = layui.layer,
+                layedit = layui.layedit,
+                upload = layui.upload,
+                $ = layui.$;
+            //var $ = layui.$;
+            var edit_tool = ['strong', 'italic', 'underline', 'del', '|', 'left', 'center', 'right', 'image', 'link', 'unlink'];//
+            var edit1, edit2, edit3;
+
+            //执行一个laydate实例
+            laydate.render({
+                elem: '#start', //指定元素
+                type: 'month'
+            });
+
+            table.on('tool(mainTable)', function (obj) {
+                var data = obj.data; //获得当前行数据
+                var layEvent = obj.event; //获得 lay-event 对应的值
+                var tr = obj.tr; //获得当前行 tr 的DOM对象
+                var post_url = '/cmdb/update/?code=2&id=' + data.xh; //生成提交地址，加上该表的唯一标识ID字段
+                //layer.alert(JSON.stringify(data));
+
+                if (layEvent === 'detail') {
+                    layer.open({
+                        type: 1,
+                        title: '查看问题分析及整改',
+                        area: ['100%', '100%'],
+                        content: $("#viewPanel"),
+                        success: function () {
+                            //layer.alert(data.q_wtyyfx);
+                            $('#wtyyfx').html($('<p>').html(data.q_wtyyfx).text());
+                            $('#zgcs').html($('<p>').html(data.q_zgcs).text());
+                            $('#zgjz').html($('<p>').html(data.q_zgjz).text());
+                        }
+                    });
+                } else if (layEvent === 'edit') {
+                    var index = layer.open({
+                        type: 1,
+                        title: '编辑问题分析及整改',
+                        area: ['100%', '100%'],
+                        content: $("#editPanel"),
+                        success: function () {
+                            //console.log($('<p>').html(data.q_wtyyfx).text()); html转义
+                            $("#q_wtyyfx").val($('<p>').html(data.q_wtyyfx).text());
+                            $("#q_zgcs").val($('<p>').html(data.q_zgcs).text());
+                            $("#q_zgjz").val($('<p>').html(data.q_zgjz).text());
+                            layedit.set({uploadImage: {url: '/cmdb/upload/?code=2&id=' + data.xh}}); //插入图片接口
+                            edit1 = layedit.build('q_wtyyfx', {height: 150, tool: edit_tool}); //建立编辑器
+                            edit2 = layedit.build('q_zgcs', {height: 150, tool: edit_tool}); //建立编辑器
+                            edit3 = layedit.build('q_zgjz', {height: 50, tool: edit_tool}); //建立编辑器
+
+                            //自定义验证规则同时用来触发更新富文本编辑器layedit内容
+                            form.verify({
+                                content: function () {
+                                    layedit.sync(edit1);
+                                    layedit.sync(edit2);
+                                    layedit.sync(edit3);
+                                }
+                            });
+
+                            //监听提交
+                            form.on('submit(sb_commit)', function (data) {
+                                //console.log(data);
+                                $.ajax({
+                                    url: post_url,
+                                    type: 'POST',
+                                    data: JSON.stringify(data.field),
+                                    success: function () {
+                                        layer.alert('保存成功！', {icon: 1});
+                                        layer.close(index);
+                                        table.reload('mainTable'); //刷新表格，解决打开form不是新提交的数据
+                                    }
+                                });
+                                return false;
+                            });
+
+                        }
+                    });
+                }
+            });
+
+            //监听单元格编辑
+            table.on('edit(mainTable)', function (obj) {
+                var value = obj.value; //得到修改后的值
+                var data = obj.data; //得到所在行所有键值
+                var field = obj.field; //得到字段
+                var post_url = '/cmdb/update/?code=2&id=' + data.xh; //生成提交地址，加上该表的唯一标识ID字段
+                var edit_data = '{"' + field + '":"' + Number(value) + '"}';
+
+                if (isNaN(value)) {
+                    layer.msg('请输入数字！');
+                    //$("td[data-field='"+obj.field+"']").eq(obj.data.id-1).find("div").html(0);
+                    //$("td[data-field='"+obj.field+"']").eq(obj.data.id-1).find("input").val(0);
+                    $(".layui-table-edit").val(0); // 把错误的非数字重置为0
+                    return false;
+                } else {
+                    $(".layui-table-edit").val(Number(value)); // 把数字前的0去掉
+                    //console.log(data); //data.LAY_TABLE_INDEX
+                    if ($(".layui-table-edit").val() == 0) {
+                        if (field == 'f_sbs') {
+                            $(".laytable-cell-1-f_ycgdxx").eq(data.LAY_TABLE_INDEX + 1).html('<span class="layui-badge layui-bg-blue">无异常</span>');
+                        } else {
+                            $(".laytable-cell-1-j_ycgdxx").eq(data.LAY_TABLE_INDEX + 1).html('<span class="layui-badge layui-bg-blue">无异常</span>');
+                        }
+                    } else {
+                        if (field == 'f_sbs') {
+                            $(".laytable-cell-1-f_ycgdxx").eq(data.LAY_TABLE_INDEX + 1)
+                                .html('<button type="button" class="layui-btn layui-btn-mini up_j_file" id="up_j_' +
+                                    data.xh + '" lay-data="{url:\'/cmdb/upload/?code=2&send=f&id=' +
+                                    data.xh + '\',accept: \'file\',multiple: true,exts:\'xls|xlsx\'}">' +
+                                    '<i class="layui-icon">&#xe67c;</i>上传异常清单</button>');
+                        } else {
+                            $(".laytable-cell-1-j_ycgdxx").eq(data.LAY_TABLE_INDEX + 1)
+                                .html('<button type="button" class="layui-btn layui-btn-mini up_j_file" id="up_j_' +
+                                    data.xh + '" lay-data="{url:\'/cmdb/upload/?code=2&send=j&id=' +
+                                    data.xh + '\',accept: \'file\',multiple: true,exts:\'xls|xlsx\'}">' +
+                                    '<i class="layui-icon">&#xe67c;</i>上传异常清单</button>');
+                        }
+                    }
+                    $.ajax({
+                        url: post_url,
+                        type: 'POST',
+                        data: edit_data,
+                        success: function () {
+                            //layer.msg('修改成功！');
+                            //layer.alert(edit_data);
+                        }
+                    });
+                }
+            });
+
+            //执行实例
+            var uploadInst1 = upload.render({
+                elem: '.up_f_file', //绑定元素
+                done: function (res) {
+                    //上传完毕回调
+                    url = res.data.src;
+                    layer.alert('<a target="_blank" href="' + url + '">' + url + '</a>');
+                    table.reload('mainTable'); //刷新表格
+                },
+                error: function () {
+                    //请求异常回调
+                }
+            });
+            //执行实例
+            var uploadInst2 = upload.render({
+                elem: '.up_j_file', //绑定元素
+                done: function (res) {
+                    //上传完毕回调
+                    url = res.data.src;
+                    layer.alert('<a target="_blank" href="' + url + '">' + url + '</a>');
+                    table.reload('mainTable'); //刷新表格
+                },
+                error: function () {
+                    //请求异常回调
+                }
+            });
+
+            form.on('submit(search)', function (data) {
+                table.reload('mainTable', {
+                    where: {
+                        start: data.field.start,
+                        sort: data.field.sort,
+                        keyword: data.field.keyword
+                    }
+                });
+                return false;
+            });
+            form.on('submit(excel)', function (data) {
+                $.ajax({
+                    url: '/cmdb/excel/?code=2&start=' + data.field.start + '&type=1',
+                    success: function (data) {
+                        window.location.href = '/cmdb/download/?name=' + data;
+                    }
+                });
+                return false;
+            });
+        });
+    </script>
+{% endblock %}
