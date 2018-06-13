@@ -519,7 +519,7 @@ class SSHFunctions:
         data = [x for x in self.data.strip().replace('\r', '').split('\n')]
         data = [x for x in data[2:] if '%' in x]  # 只保留带%号的行
         data = [x.split(' ') for x in data]  # 根据空格进行拆分
-        data = [[y for y in x if y != ''][-2:] for x in data]  # 去除多余的空格，只取需要的字段
+        data = [[y for y in x if y != '' and y is not None][-2:] for x in data]  # 去除多余的空格，只取需要的字段
         for i in data: i[0] = int(i[0].replace('%', ''))  # 转换成int来比较
         data = max(data)  # 获得最大的
         msg = ''
@@ -535,8 +535,8 @@ class SSHFunctions:
         data = [x for x in self.data.strip().replace('\r', '').split('\n')]
         data = [x for x in data[2:] if '%' in x]  # 只保留带%号的行
         data = [x.split(' ') for x in data]  # 根据空格进行拆分
-        data = [[y for y in x if y != ''][-2:] for x in data]  # 去除多余的空格，只取需要的字段
-        for i in data: i[0] = int(i[0].replace('%', ''))  # 转换成int来比较
+        data = [[y for y in x if y != '' and y is not None][-2:] for x in data]  # 去除多余的空格，只取需要的字段
+        for i in data: i[0] = int(i[0].replace('%', '').strip())  # 转换成int来比较
         data = max(data)  # 获得最大的
         msg = ''
         if data[0] < 85:
@@ -551,7 +551,7 @@ class SSHFunctions:
         data = [x for x in self.data.strip().replace('\r', '').split('\n')]
         data = [x for x in data if 'Cpu' in x]
         data = [x.split(' ') for x in data]  # 根据空格进行拆分
-        data = float([[y for y in x if y != ''] for x in data][0][1].split('%')[0])  # 去除多余的空格，只取需要的字段
+        data = float([[y for y in x if y != '' and y is not None] for x in data][0][1].split('%')[0])  # 去除多余的空格，只取需要的字段
         msg = ''
         if data < 85:
             msg = 'CPU使用率正常'
@@ -565,8 +565,8 @@ class SSHFunctions:
         data = [x for x in self.data.strip().replace('\r', '').split('\n')]
         data = [x for x in data[2:] if 'Mem:' in x]  # 只保留带%号的行
         data = [x.split(' ') for x in data]  # 根据空格进行拆分
-        data = [[y for y in x if y != ''] for x in data][0]  # 去除多余的空格，只取需要的字段
-        data = round(int(data[2]) / int(data[1]) * 100, 2)
+        data = [[y for y in x if y != '' and y is not None] for x in data][0]  # 去除多余的空格，只取需要的字段
+        data = round(int(data[2].strip()) / int(data[1].strip()) * 100, 2)
         msg = ''
         if data < 85:
             msg = '内存使用正常'

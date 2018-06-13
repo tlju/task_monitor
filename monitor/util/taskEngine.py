@@ -79,22 +79,22 @@ class TaskEngine(Thread):
                 elif str(result) != 'True':
                     self.recv['@recv'] = result  # 获取某些函数返回的文本对象
                     logger.debug(result)
-                    # self.inspector(result, i['func_id'], self.task_id, i['step'])
+                    self.inspector(result, i['func_id'], self.task_id, i['step'])
             except Exception as e:
                 logger.exception(e)
                 break
         logger.info('任务 ' + str(self.task_id) + ' 执行完毕！')
         print('任务 ' + str(self.task_id) + ' 执行完毕！')
-        self.inspector('', 40, self.task_id, 1)
+        # self.inspector('', 40, self.task_id, 1)
 
     # 检查是否触发策略
     def inspector(self, recv, func_id, task_id, step_id):
-        recv = [{'free': '0', 'pri': 'false', 'threads': '32', 'name': 'MONITOR', 'freethreads': '2', 'max': '65535'},
-                {'free': '0', 'pri': 'false', 'threads': '32', 'name': 'CONSOLE', 'freethreads': '32', 'max': '65535'},
-                {'free': '0', 'pri': 'false', 'threads': '8', 'name': '_system', 'freethreads': '7', 'max': '16'},
-                {'free': '0', 'pri': 'false', 'threads': '32', 'name': 'BPM', 'freethreads': '8', 'max': '65535'},
-                {'free': '0', 'pri': 'false', 'threads': '64', 'name': 'Common', 'freethreads': '64', 'max': '65535'},
-                {'free': '0', 'pri': 'false', 'threads': '64', 'name': 'JMSCommon', 'freethreads': '54', 'max': '65535'}]
+        # recv = [{'free': '0', 'pri': 'false', 'threads': '32', 'name': 'MONITOR', 'freethreads': '2', 'max': '65535'},
+        #         {'free': '0', 'pri': 'false', 'threads': '32', 'name': 'CONSOLE', 'freethreads': '32', 'max': '65535'},
+        #         {'free': '0', 'pri': 'false', 'threads': '8', 'name': '_system', 'freethreads': '7', 'max': '16'},
+        #         {'free': '0', 'pri': 'false', 'threads': '32', 'name': 'BPM', 'freethreads': '8', 'max': '65535'},
+        #         {'free': '0', 'pri': 'false', 'threads': '64', 'name': 'Common', 'freethreads': '64', 'max': '65535'},
+        #         {'free': '0', 'pri': 'false', 'threads': '64', 'name': 'JMSCommon', 'freethreads': '54', 'max': '65535'}]
         policy = []
         for i in self.func_policy:
             if i['func_id'] == func_id:
@@ -102,6 +102,7 @@ class TaskEngine(Thread):
         policy = sorted(policy)
 
         for x in recv:
+            # print(x)
             result = []
             for y in policy:
                 text = 'y[3]'

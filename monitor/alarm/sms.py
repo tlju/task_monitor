@@ -21,8 +21,6 @@ class SMS:
         self.Request = JClass('com.csg.itms.edic.util.message.Request')
         self.Response = JClass('com.csg.itms.edic.util.message.Response')
 
-        # self.message = kwargs
-
     def send_sms(self, server='10.150.68.133', port=60001, subject='SOA2NARIAlertSend', classname='SystemManage', sence='SOA', **kwargs):
         map = JClass("java.util.HashMap")()
         map.put("CLASSNAME", classname)  # 约定为安全审计系统集成大类
@@ -56,10 +54,6 @@ class SMS:
         else:
             return False
 
-    # def run(self):
-    #     # 十分钟检测紧急告警，二十分钟检测重大告警，三十分钟检测一般告警，一小时检测提示告警
-    #     self.send_sms(**self.message)
-
 
 class SMSSender:
     def __init__(self):
@@ -85,6 +79,10 @@ class SMSSender:
                         GROUP BY func_id,task_id,step_id,alarmlevel,alarmcontent,policy_id) 
                         GROUP BY policy,originalid,maindata,alarmid,alarmlevel,alarmcount,alarmcount,alarmcate,
                         alarmtype,alarmstatus,ipaddress,time,firsttime,endtime"""
+        self.level_01 = 60
+        self.level_02 = 30
+        self.level_03 = 15
+        self.level_04 = 5
 
     def dictfetchall(self, cursor):
         # 将游标返回的结果保存到一个字典对象中
@@ -93,11 +91,41 @@ class SMSSender:
 
     def sms_level_01(self):  # 提示告警
         now = datetime.datetime.now()
-        start_time = (now - datetime.timedelta(minutes=1)).strftime('%Y-%m-%d %H:%M:%S')
+        start_time = (now - datetime.timedelta(minutes=self.level_01)).strftime('%Y-%m-%d %H:%M:%S')
         end_time = now.strftime('%Y-%m-%d %H:%M:%S')
         cursor = connection.cursor()
         cursor.execute(self.sql % ('01', start_time, end_time))
         result = self.dictfetchall(cursor)
+        self.sms_send(result)
+
+    def sms_level_02(self):  # 一般告警
+        now = datetime.datetime.now()
+        start_time = (now - datetime.timedelta(minutes=self.level_02)).strftime('%Y-%m-%d %H:%M:%S')
+        end_time = now.strftime('%Y-%m-%d %H:%M:%S')
+        cursor = connection.cursor()
+        cursor.execute(self.sql % ('02', start_time, end_time))
+        result = self.dictfetchall(cursor)
+        self.sms_send(result)
+
+    def sms_level_03(self):  # 重大告警
+        now = datetime.datetime.now()
+        start_time = (now - datetime.timedelta(minutes=self.level_03)).strftime('%Y-%m-%d %H:%M:%S')
+        end_time = now.strftime('%Y-%m-%d %H:%M:%S')
+        cursor = connection.cursor()
+        cursor.execute(self.sql % ('03', start_time, end_time))
+        result = self.dictfetchall(cursor)
+        self.sms_send(result)
+
+    def sms_level_04(self):  # 紧急告警
+        now = datetime.datetime.now()
+        start_time = (now - datetime.timedelta(minutes=self.level_04)).strftime('%Y-%m-%d %H:%M:%S')
+        end_time = now.strftime('%Y-%m-%d %H:%M:%S')
+        cursor = connection.cursor()
+        cursor.execute(self.sql % ('04', start_time, end_time))
+        result = self.dictfetchall(cursor)
+        self.sms_send(result)
+
+    def sms_send(self, result):
         for i in result:
             SMSLog.objects.create(**i)
             SMS().send_sms(**i)
@@ -105,5 +133,7 @@ class SMSSender:
 
     def sched(self):
         time.sleep(1)
-        # schedule.every(1).hours.do(self.sms_level_01, schedule.next_run().strftime('%Y-%m-%d %H:%M:%S'))
-        schedule.every(60).seconds.do(self.sms_level_01)
+        schedule.every(self.level_01).minutes.do(self.sms_level_01)
+        schedule.every(self.level_02).minutes.do(self.sms_level_02)
+        schedule.every(self.level_03).minutes.do(self.sms_level_03)
+        schedule.every(self.level_04).minutes.do(self.sms_level_04)
