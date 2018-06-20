@@ -115,7 +115,7 @@ class TaskEngine(Thread):
                 # print(y)
                 if eval(content):
                     # [策略等级,函数id,时间,告警内容,任务id,步骤id]
-                    result.append([y[0], y[1], time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())), ret, task_id, step_id, y[6]])
+                    result.append([y[0], y[1], time.strftime('%Y/%m/%d %H:%M:%S', time.localtime(time.time())), ret, task_id, step_id, y[6]])
             if len(result):
                 result = min(result)
                 # print(result)
