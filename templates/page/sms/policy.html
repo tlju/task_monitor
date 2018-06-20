@@ -1,0 +1,29 @@
+{% extends 'template.html' %}
+{% block body %}
+    <div class="x-body">
+        <table class="layui-table" lay-filter="mainTable" id="mainTable"></table>
+    </div>
+
+    <script type="application/javascript">
+        layui.use(['form', 'table', 'layer'], function () {
+            var form = layui.form, table = layui.table, layer = layui.layer;
+            table.render({
+                elem: '#mainTable',
+                id: 'mainTable',
+                method: 'POST',
+                url: '/monitor/data/?code=4',
+                limits: [10, 30, 60, 100],
+                limit: 10,
+                height: 'full-170',
+                cols: [[{field: 'id', title: '编号', align: 'center', width: 80},
+                    {field: 'type', title: '策略监控类型', width: 120},
+                    {field: 'level', title: '异常等级', width: 80},
+                    {field: 'content', title: '策略内容'},
+                    {field: 'ret', title: '触发策略返回文本'},
+                    {field: 'func_id', title: '关联函数', width: 120},
+                    {field: 'col', title: '字段', width: 100}]],
+                page: true
+            });
+        });
+    </script>
+{% endblock %}

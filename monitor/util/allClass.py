@@ -522,7 +522,6 @@ class SSHFunctions:
         data = [[y for y in x if y != '' and y is not None][-2:] for x in data]  # 去除多余的空格，只取需要的字段
         for i in data: i[0] = int(i[0].replace('%', ''))  # 转换成int来比较
         data = max(data)  # 获得最大的
-        msg = ''
         if data[0] < 85:
             msg = '硬盘空间使用正常'
         elif data[0] > 85 and data[0] < 90:
@@ -538,7 +537,6 @@ class SSHFunctions:
         data = [[y for y in x if y != '' and y is not None][-2:] for x in data]  # 去除多余的空格，只取需要的字段
         for i in data: i[0] = int(i[0].replace('%', '').strip())  # 转换成int来比较
         data = max(data)  # 获得最大的
-        msg = ''
         if data[0] < 85:
             msg = '硬盘Inode使用正常'
         elif data[0] > 85 and data[0] < 90:
@@ -552,7 +550,6 @@ class SSHFunctions:
         data = [x for x in data if 'Cpu' in x]
         data = [x.split(' ') for x in data]  # 根据空格进行拆分
         data = float([[y for y in x if y != '' and y is not None] for x in data][0][1].split('%')[0])  # 去除多余的空格，只取需要的字段
-        msg = ''
         if data < 85:
             msg = 'CPU使用率正常'
         elif data > 85 and data < 90:
@@ -567,7 +564,6 @@ class SSHFunctions:
         data = [x.split(' ') for x in data]  # 根据空格进行拆分
         data = [[y for y in x if y != '' and y is not None] for x in data][0]  # 去除多余的空格，只取需要的字段
         data = round(int(data[2].strip()) / int(data[1].strip()) * 100, 2)
-        msg = ''
         if data < 85:
             msg = '内存使用正常'
         elif data > 85 and data < 90:
@@ -586,7 +582,6 @@ class SSHFunctions:
         return msg
 
     def ssh_analysis_check_igate(self):
-        msg = ''
         if 'Restart' in self.data:
             msg = '服务总线故障，请核查！'
         else:
@@ -595,7 +590,6 @@ class SSHFunctions:
 
     def ssh_analysis_config_igate(self):
         day = datetime.datetime.now().weekday()  # 0-6 星期日-星期六
-        msg = ''
         if day == 4:
             result = self.ssh_ssrp_pack('sh /usr/local/service/script/backup/backup_config_igate.sh', '~]', None)
             if result:
