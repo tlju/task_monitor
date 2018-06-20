@@ -91,8 +91,8 @@ class SMSSender:
 
     def sms_level_01(self):  # 提示告警
         now = datetime.datetime.now()
-        start_time = (now - datetime.timedelta(minutes=self.level_01)).strftime('%Y-%m-%d %H:%M:%S')
-        end_time = now.strftime('%Y-%m-%d %H:%M:%S')
+        start_time = (now - datetime.timedelta(minutes=self.level_01)).strftime('%Y/%m/%d %H:%M:%S')
+        end_time = now.strftime('%Y/%m/%d %H:%M:%S')
         cursor = connection.cursor()
         cursor.execute(self.sql % ('01', start_time, end_time))
         result = self.dictfetchall(cursor)
@@ -100,8 +100,8 @@ class SMSSender:
 
     def sms_level_02(self):  # 一般告警
         now = datetime.datetime.now()
-        start_time = (now - datetime.timedelta(minutes=self.level_02)).strftime('%Y-%m-%d %H:%M:%S')
-        end_time = now.strftime('%Y-%m-%d %H:%M:%S')
+        start_time = (now - datetime.timedelta(minutes=self.level_02)).strftime('%Y/%m/%d %H:%M:%S')
+        end_time = now.strftime('%Y/%m/%d %H:%M:%S')
         cursor = connection.cursor()
         cursor.execute(self.sql % ('02', start_time, end_time))
         result = self.dictfetchall(cursor)
@@ -109,8 +109,8 @@ class SMSSender:
 
     def sms_level_03(self):  # 重大告警
         now = datetime.datetime.now()
-        start_time = (now - datetime.timedelta(minutes=self.level_03)).strftime('%Y-%m-%d %H:%M:%S')
-        end_time = now.strftime('%Y-%m-%d %H:%M:%S')
+        start_time = (now - datetime.timedelta(minutes=self.level_03)).strftime('%Y/%m/%d %H:%M:%S')
+        end_time = now.strftime('%Y/%m/%d %H:%M:%S')
         cursor = connection.cursor()
         cursor.execute(self.sql % ('03', start_time, end_time))
         result = self.dictfetchall(cursor)
@@ -118,8 +118,8 @@ class SMSSender:
 
     def sms_level_04(self):  # 紧急告警
         now = datetime.datetime.now()
-        start_time = (now - datetime.timedelta(minutes=self.level_04)).strftime('%Y-%m-%d %H:%M:%S')
-        end_time = now.strftime('%Y-%m-%d %H:%M:%S')
+        start_time = (now - datetime.timedelta(minutes=self.level_04)).strftime('%Y/%m/%d %H:%M:%S')
+        end_time = now.strftime('%Y/%m/%d %H:%M:%S')
         cursor = connection.cursor()
         cursor.execute(self.sql % ('04', start_time, end_time))
         result = self.dictfetchall(cursor)
