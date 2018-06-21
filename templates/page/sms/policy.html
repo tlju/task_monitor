@@ -3,10 +3,14 @@
     <div class="x-body">
         <table class="layui-table" lay-filter="mainTable" id="mainTable"></table>
     </div>
+    <script type="text/html" id="mainBar">
+        <a class="layui-btn layui-btn-xs" lay-event="addStep"><i class="layui-icon">&#xe654;</i></a><!--添加步骤-->
+        <a class="layui-btn layui-btn-xs" lay-event="delTask"><i class="layui-icon">&#xe640;</i></a><!--删除任务-->
+    </script>
 
     <script type="application/javascript">
         layui.use(['form', 'table', 'layer'], function () {
-            var form = layui.form, table = layui.table, layer = layui.layer;
+            var form = layui.form, table = layui.table, layer = layui.layer, $ = layui.$;
             table.render({
                 elem: '#mainTable',
                 id: 'mainTable',
@@ -21,7 +25,8 @@
                     {field: 'content', title: '策略内容'},
                     {field: 'ret', title: '触发策略返回文本'},
                     {field: 'func_id', title: '关联函数', width: 120},
-                    {field: 'col', title: '字段', width: 100}]],
+                    {field: 'col', title: '字段', width: 100},
+                    {title: '操作', align: 'center', toolbar: '#mainBar', width: 100}]],
                 page: true
             });
         });

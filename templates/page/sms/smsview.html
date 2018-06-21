@@ -1,0 +1,19 @@
+{% extends 'template.html' %}
+{% block body %}
+    <div class="x-body">
+        <table class="layui-table" lay-filter="policyTable" id="policyTable"></table>
+        <table class="layui-table" lay-filter="smsTable" id="smsTable"></table>
+    </div>
+
+    <script type="application/javascript">
+        layui.use(['layer', 'table', 'form'], function () {
+            var layer = layui.layer, table = layui.table, form = layui.form, $ = layui.$;
+            table.render({
+                elem:'policyTable',
+                id:'policyTable',
+                method:'POST',
+                url:'/monitor/data/?code=15'
+            });
+        });
+    </script>
+{% endblock %}
