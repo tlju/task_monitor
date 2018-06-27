@@ -32,7 +32,7 @@ def echo_log(request):
 def sms_send(request):
     from monitor.alarm.sms import SMS
     SMS().send_sms(
-        **{'time': '2018/05/27 18:27:42', 'alarmlevel': '01', 'alarmid': 'A3', 'maindata': 'AlarmID=A3', 'alarmcontent': '总线 BPM 通道使用率大于70%，警告！', 'ipaddress': None, 'alarmcount': 3,
+        **{'time': '2018/05/27 18:27:42', 'alarmlevel': '01', 'alarmid': 'A3', 'maindata': 'AlarmID=A3', 'alarmcontent': '总线 BPM 通道使用率大于70%，警告！', 'ipaddress': '', 'alarmcount': '3',
          'firsttime': '2018/05/27 18:27:01', 'alarmstatus': '01', 'policy': 'S3-12-1', 'areacode': '0300', 'alarmtype': '01', 'originalid': 'S3-12-1', 'alarmcate': '08',
          'endtime': '2018/05/27 18:27:41'})
     return HttpResponse(1)

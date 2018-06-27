@@ -182,7 +182,7 @@ class SMSLog(models.Model):
     ipaddress = models.CharField('告警IP地址', max_length=30, blank=True, null=True)
     time = models.DateTimeField('消息发送时间')
     firsttime = models.DateTimeField('首次产生告警时间')
-    endtime = models.DateTimeField('最后一次产生告警时间')
+    endtime = models.DateTimeField('最后产生告警时间')
 
     class Meta:
         verbose_name = '短信发送日志表'

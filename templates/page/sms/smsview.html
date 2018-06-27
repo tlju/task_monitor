@@ -9,10 +9,30 @@
         layui.use(['layer', 'table', 'form'], function () {
             var layer = layui.layer, table = layui.table, form = layui.form, $ = layui.$;
             table.render({
-                elem:'policyTable',
-                id:'policyTable',
-                method:'POST',
-                url:'/monitor/data/?code=15'
+                elem: '#policyTable',
+                id: 'policyTable',
+                method: 'POST',
+                url: '/monitor/data/?code=5',
+                limits: [10, 30, 60, 100],
+                limit: 10,
+                height: 'full-570',
+                cellMinWidth: 200,
+                cols: [[{field: 'id', title: '编号', align: 'center'},
+                    {field: 'policy', title: '配置项编码'},
+                    {field: 'originalid', title: '系统资源ID'},
+                    {field: 'maindata', title: '告警主数据'},
+                    {field: 'alarmid', title: '告警ID'},
+                    {field: 'alarmlevel', title: '告警级别'},
+                    {field: 'alarmcontent', title: '告警内容'},
+                    {field: 'alarmcount', title: '重复次数'},
+                    {field: 'alarmcate', title: '告警分类'},
+                    {field: 'alarmtype', title: '告警类型'},
+                    {field: 'alarmstatus', title: '告警处理状态'},
+                    {field: 'areacode', title: '单位编码'},
+                    {field: 'ipaddress', title: '告警IP地址'},
+                    {field: 'time', title: '消息发送时间'},
+                    {field: 'firsttime', title: '首次产生告警时间'},
+                    {field: 'endtime', title: '最后产生告警时间'}]],
             });
         });
     </script>

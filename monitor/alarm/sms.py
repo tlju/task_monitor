@@ -37,7 +37,7 @@ class SMS:
         map.put("AlarmType", kwargs['alarmtype'])  # 描述告警
         map.put("AlarmContent", kwargs['alarmcontent'])  # 告警内容描述
         map.put("AlarmStatus", kwargs['alarmstatus'])  # 未确认状态
-        map.put("AlarmCount", kwargs['alarmcount'])  # 告警重复次数
+        map.put("AlarmCount", str(kwargs['alarmcount']))  # 告警重复次数
         map.put("FirstTime", kwargs['firsttime'])  # 告警开始时间
         map.put("EndTime", kwargs['endtime'])  # 告警结束时间
 
