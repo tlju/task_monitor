@@ -364,6 +364,7 @@ class SSHFunctions:
             except Exception as e:
                 data += x.decode('gbk')
             if verbose:
+                logger.info(data)
                 sys.stdout.write(data)
                 sys.stdout.flush()
             if re.search('Select group:', data):
@@ -420,6 +421,7 @@ class SSHFunctions:
             except Exception as e:
                 data += x.decode('gbk')
             if verbose:
+                logger.info(data)
                 sys.stdout.write(data)
                 sys.stdout.flush()
             if re.search('~]', data):
@@ -445,6 +447,7 @@ class SSHFunctions:
             except Exception as e:
                 data += x.decode('gbk')
             if verbose:
+                logger.info(data)
                 sys.stdout.write(data)
                 sys.stdout.flush()
             if options:
