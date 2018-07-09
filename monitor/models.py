@@ -187,3 +187,48 @@ class SMSLog(models.Model):
     class Meta:
         verbose_name = '短信发送日志表'
         verbose_name_plural = '短信发送日志表'
+
+
+# 用户表 包含所有用户
+class UserProfile(models.Model):
+    name = models.CharField('名称', max_length=30)
+    email = models.EmailField('邮箱')
+    phone = models.CharField('联系电话', max_length=11)
+    type = models.CharField('用户类型', max_length=1, choices=(('1', '普通用户'), ('2', '管理员')), default='1')
+    memo = models.TextField('备注', blank=True)
+    create_at = models.DateTimeField('创建时间', blank=True, auto_now_add=True)
+    update_at = models.DateTimeField('修改时间', blank=True, auto_now=True)
+
+    class Meta:
+        verbose_name = '用户信息'
+        verbose_name_plural = '用户信息'
+
+    def __str__(self):
+        return self.name
+
+
+# 管理员信息
+class AdminInfo(models.Model):
+    user = models.OneToOneField('UserProfile', verbose_name='用户')
+    username = models.CharField('用户名', max_length=50)
+    password = models.CharField('密码', max_length=200)
+
+    class Meta:
+        verbose_name = '管理员信息'
+        verbose_name_plural = '管理员信息'
+
+
+class Server(models.Model):
+    sn = models.CharField('SN号', max_length=64)
+    model = models.CharField('系统类型', max_length=1, choices=(('1', 'linux'), ('2', 'windows')), default='1')
+    username = models.CharField('登陆帐号', max_length=32, blank=True, null=True)
+    password = models.CharField('密码', max_length=32, blank=True, null=True)
+    ipaddress = models.GenericIPAddressField('IP地址', blank=True, null=True)
+    memo = models.TextField('备注', null=True, blank=True)
+    create_at = models.DateTimeField('创建时间', blank=True, auto_now_add=True)
+    update_at = models.DateTimeField('修改时间', blank=True, auto_now=True)
+    user_profile = models.ForeignKey('UserProfile', verbose_name='设备管理员', related_name='+', null=True, blank=True)
+
+    class Meta:
+        verbose_name = '服务器'
+        verbose_name_plural = '服务器'

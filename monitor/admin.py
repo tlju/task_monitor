@@ -68,6 +68,21 @@ class AdminSMSLog(admin.ModelAdmin):
     ordering = ('id',)
 
 
+class AdminUserProfile(admin.ModelAdmin):
+    list_display = ('id', 'name', 'email', 'phone', 'type', 'memo')
+    ordering = ('id',)
+
+
+class AdminAdminInfo(admin.ModelAdmin):
+    list_display = ('id', 'user', 'username', 'password')
+    ordering = ('user_id',)
+
+
+class AdminServer(admin.ModelAdmin):
+    list_display = ('id', 'sn', 'model', 'username', 'password', 'ipaddress', 'memo', 'user_profile')
+    ordering = ('id',)
+
+
 admin.site.register(models.SysMenu, AdminSysMenu)
 admin.site.register(models.SysMapping, AdminSysMapping)
 admin.site.register(models.SysParam, AdminSysParam)
@@ -80,3 +95,6 @@ admin.site.register(models.TaskListConfig, AdminTaskListConfig)
 admin.site.register(models.Variable, AdminVariable)
 admin.site.register(models.PolicyLog, AdminPolicyLog)
 admin.site.register(models.SMSLog, AdminSMSLog)
+admin.site.register(models.UserProfile, AdminUserProfile)
+admin.site.register(models.AdminInfo, AdminAdminInfo)
+admin.site.register(models.Server, AdminServer)
