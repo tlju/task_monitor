@@ -3,7 +3,7 @@
 import time, datetime, shutil, os, webbrowser, sys, re, json
 import sqlite3 as sl
 import pyautogui, win32gui, win32con, win32clipboard
-import docx, xlrd
+import docx, xlrd, openpyxl
 from docx.shared import Inches
 from docx.enum.text import WD_TAB_ALIGNMENT
 import paramiko
@@ -162,8 +162,20 @@ class ExcelFunctions:
             return False
 
     # 把数据写入到excel文档
-    def write_excel(self, file, data, row_start, sheet_name='Sheet1'):
-        pass
+    def write_excel_from_db(self, file, data, row_start, col_start, sheet_name='Sheet1'):
+        workbook = openpyxl.Workbook()
+        worksheet = workbook.active
+        worksheet.title = sheet_name
+        row = len(data)
+        row_start = int(row_start)
+        col_start = int(col_start)
+
+        for x in range(row):
+            col = len(data[x])
+            for y in range(col):
+                worksheet.cell(x + row_start, y + col_start).value = data[x][y]
+
+        workbook.save(file)
 
 
 class ControlFunctions:

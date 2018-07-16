@@ -1,7 +1,6 @@
 .idea
 userfiles
 logs
-db.sqlite3
 monitor/migrations/0002_auto_20180709_1554.py
 monitor/migrations/0003_auto_20180709_1602.py
 monitor/migrations/0004_auto_20180709_1607.py
