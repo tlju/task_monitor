@@ -13,6 +13,7 @@ from urllib.request import urlopen
 from lxml import etree
 from monitor.otherModels import *
 from monitor.util.preload import logger
+from monitor.util import getResource as rs
 from jpype import *
 
 
@@ -625,32 +626,42 @@ class LogicFunctions:
     pass
 
 
-class DatabaseFunctions:
+class DataFunctions:
 
-    def __init__(self, conn_str):
-        self.conn_str = conn_str
-        self.conn = sl.connect(self.conn_str)
-        self.cursor = self.conn.cursor()
+    # def __init__(self, conn_str):
+    #     self.conn_str = conn_str
+    #     self.conn = sl.connect(self.conn_str)
+    #     self.cursor = self.conn.cursor()
+    #
+    # # 执行sql查询语句
+    # def db_query_sql(self, sql):
+    #     try:
+    #         data = self.cursor.execute(sql)
+    #         result = data.fetchall()
+    #         return result
+    #     except Exception as e:
+    #         logger.exception('异常SQL：' + sql)
+    #
+    # # 执行update、delete、命令等
+    # def db_excute_sql(self, sql):
+    #     cursor = self.conn.cursor()
+    #     try:
+    #         cursor.execute(sql)
+    #     except Exception as e:
+    #         pass
+    #         logger.exception('异常SQL：' + sql)
+    #     self.conn.commit()
+    #     cursor.close()
+    #     return True
 
-    # 执行sql查询语句
-    def db_query_sql(self, sql):
-        try:
-            data = self.cursor.execute(sql)
-            result = data.fetchall()
-            return result
-        except Exception as e:
-            logger.exception('异常SQL：' + sql)
+    def __init__(self):
+        pass
 
-    # 执行update、delete、命令等
-    def db_excute_sql(self, sql):
-        cursor = self.conn.cursor()
-        try:
-            cursor.execute(sql)
-        except Exception as e:
-            pass
-            logger.exception('异常SQL：' + sql)
-        self.conn.commit()
-        cursor.close()
+    def db_table_data(self, table_name, columns, condition, sql=None):
+        cls = rs.import_table(table_name)
+        print(table_name, sql)
+        a = {'condition': 'up_code="0"', 'table_name': 'SysMenu', 'columns': 'code,code_name,type', 'sql': 'select * from dual'}
+        b = "{'condition': 'up_code=0', 'sql': 'select * from dual', 'columns': 'code,code_name,type', 'table_name': 'SysMenu'}"
         return True
 
 

@@ -39,7 +39,6 @@ def del_tabledata(code, data):
 # 更新修改后的表格字段内容
 def set_tabledata(code, data):
     # print(code, json.loads(data), type(json.loads(data)))
-    # print(data)
     status = 0
     table = ''
     allmenu = cache.get('allmenu')
@@ -63,16 +62,23 @@ def set_tabledata(code, data):
                     cls.objects.create(no=no_max + 1, **up_data['condition'])
                 else:
                     cls.objects.create(no=1, **up_data['condition'])
+        elif table == 'TaskListConfig':
+            up_data['condition']['value'] = json.dumps(up_data['condition']['value'])  # 存到数据库为json字符串
+            cls.objects.create(**up_data['condition'])
         else:
             cls.objects.create(**up_data['condition'])
     else:
-        for k, v in up_data['condition'].items():
-            exec_str = 'cls.objects.filter(id=' + str(up_data['id']) + ').update(%s="%s")' % (k, v)  # 转义特殊字符escape(v.replace('\n', '\\n'))
-            exec(exec_str.replace('\n', '\\n'))  # 执行字符串python语句
         if table == 'TaskList':
             no = list(cls.objects.filter(id=str(up_data['id'])).values('no'))[0]['no']
             if 'param' in up_data['condition']:
                 update_variable(no, up_data['condition']['param'])  # 更新自定义参数表
+
+        for k, v in up_data['condition'].items():
+            if table == 'TaskListConfig':
+                exec_str = 'cls.objects.filter(id=' + str(up_data['id']) + ').update(%s=%s)' % (k, v)  # 转义特殊字符escape(v.replace('\n', '\\n'))
+            else:
+                exec_str = 'cls.objects.filter(id=' + str(up_data['id']) + ').update(%s="%s")' % (k, v)  # 转义特殊字符escape(v.replace('\n', '\\n'))
+            exec(exec_str.replace('\n', '\\n'))  # 执行字符串python语句
         status = 1
     return status
 

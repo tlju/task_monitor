@@ -8,4 +8,6 @@ monitor/migrations/__pycache__/0002_auto_20180709_1554.cpython-35.pyc
 monitor/migrations/__pycache__/0003_auto_20180709_1602.cpython-35.pyc
 monitor/migrations/__pycache__/0004_auto_20180709_1607.cpython-35.pyc
 templates/page/host/
-/db.sqlite3
+db.sqlite3
+monitor/migrations/0005_functions_status.py
+monitor/migrations/__pycache__/0005_functions_status.cpython-35.pyc

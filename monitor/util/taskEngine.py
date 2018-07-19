@@ -7,6 +7,7 @@ from django.db.models import Q
 from threading import Thread
 from monitor.models import TaskList, TaskListConfig, Functions, FunctionsParam, FunctionsType, Variable, FunctionsPolicy
 import ast
+import json
 
 
 class TaskEngine(Thread):
@@ -24,7 +25,7 @@ class TaskEngine(Thread):
 
     def run(self):
         # 功能声明
-        # db = DatabaseFunctions('res/init.dat')
+        data = DataFunctions()
         word = WordFunctions()
         other = OtherFunctions()
         excel = ExcelFunctions()

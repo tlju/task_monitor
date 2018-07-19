@@ -26,6 +26,7 @@ class Functions(models.Model):
     name = models.CharField('名称', max_length=256)
     param = models.CharField('参数', max_length=1000, blank=True, null=True)
     ret = models.CharField('返回值', max_length=256, blank=True, null=True)
+    status = models.CharField('状态', max_length=1, choices=(('1', '使用中'), ('2', '停用')), default='1')
     remark = models.CharField('备注', max_length=1000, blank=True, null=True)
 
     class Meta:
@@ -82,7 +83,7 @@ class TaskList(models.Model):
     content = models.CharField('操作内容', max_length=256, blank=True, null=True)
     type = models.CharField('类型', max_length=1, choices=(('1', '任务'), ('2', '步骤')))
     up = models.IntegerField('所属任务编号')
-    param = models.CharField('自定义参数', max_length=256, blank=True, null=True)
+    param = models.CharField('自定义参数', max_length=5000, blank=True, null=True)
     ploy = models.CharField('定时策略', max_length=2, blank=True, null=True, choices=(('1', '秒'), ('2', '分钟'), ('3', '小时'), ('4', '天'),
                                                                                   ('5', '周'), ('6', '周一'), ('7', '周二'), ('8', '周三')
                                                                                   , ('9', '周四'), ('10', '周五'), ('11', '周六'), ('12', '周日')))

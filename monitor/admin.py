@@ -21,7 +21,7 @@ class AdminSysParam(admin.ModelAdmin):
 
 
 class AdminFunctions(admin.ModelAdmin):
-    list_display = ('id', 'type', 'code', 'name', 'param', 'ret', 'remark')
+    list_display = ('id', 'type', 'code', 'name', 'param', 'ret', 'status', 'remark')
     ordering = ('id',)
 
 

@@ -26,7 +26,7 @@ def loading():
     from monitor.alarm.sms import SMSSender
     SMSSender().sched()
 
-    MySchedule().start()  # 启动所有的job
+    #MySchedule().start()  # 启动所有的job
 
 
 def load_allmenu():
