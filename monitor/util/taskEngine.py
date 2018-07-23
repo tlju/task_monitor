@@ -67,7 +67,7 @@ class TaskEngine(Thread):
                     if y == "self.recv['@recv']":
                         eval_text2 += str(x) + "=self.recv['@recv'],"
                     else:
-                        eval_text2 += str(x) + "='" + str(y) + "',"
+                        eval_text2 += str(x) + '="' + str(y) + '",'
                 eval_text = eval_text + eval_text2[:-1] + ')'
             else:
                 eval_text = i['func_type'] + '.' + i['func'] + '()'
@@ -78,6 +78,7 @@ class TaskEngine(Thread):
                     logger.error('步骤 ' + str(i['step']) + ' 失败！')
                     break  # 遇到失败，直接退出任务，后面的不执行
                 elif str(result) != 'True':
+                    # print(result)
                     self.recv['@recv'] = result  # 获取某些函数返回的文本对象
                     logger.debug(result)
                     self.inspector(result, i['func_id'], self.task_id, i['step'])
