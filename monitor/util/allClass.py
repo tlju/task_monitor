@@ -11,10 +11,10 @@ from PIL import Image, ImageDraw, ImageFont
 from urllib.request import Request
 from urllib.request import urlopen
 from lxml import etree
-from monitor.otherModels import *
+# from monitor.otherModels import *
 from monitor.util.preload import logger
-from monitor.util import getResource as rs
 from jpype import *
+from django.db import connection
 
 
 class WordFunctions:
@@ -163,20 +163,26 @@ class ExcelFunctions:
             return False
 
     # 把数据写入到excel文档
-    def write_excel_from_db(self, file, data, row_start, col_start, sheet_name='Sheet1'):
-        workbook = openpyxl.Workbook()
-        worksheet = workbook.active
-        worksheet.title = sheet_name
-        row = len(data)
+    def write_excel_from_db(self, file, data, row_start, col_start, columns, template_file=None, sheet_name='Sheet1'):
+        data = json.loads(data)
+        row = data['count']
+        col = columns.split(',')
         row_start = int(row_start)
         col_start = int(col_start)
+        data = data['data']
+
+        if not template_file:
+            workbook = openpyxl.Workbook()
+        else:
+            workbook = openpyxl.load_workbook(template_file)
+        worksheet = workbook.active
+        worksheet.title = sheet_name
 
         for x in range(row):
-            col = len(data[x])
-            for y in range(col):
-                worksheet.cell(x + row_start, y + col_start).value = data[x][y]
-
+            for y, z in enumerate(col):
+                worksheet.cell(x + row_start, y + col_start).value = data[x][z]
         workbook.save(file)
+        return True
 
 
 class ControlFunctions:
@@ -627,42 +633,41 @@ class LogicFunctions:
 
 
 class DataFunctions:
-
-    # def __init__(self, conn_str):
-    #     self.conn_str = conn_str
-    #     self.conn = sl.connect(self.conn_str)
-    #     self.cursor = self.conn.cursor()
-    #
-    # # 执行sql查询语句
-    # def db_query_sql(self, sql):
-    #     try:
-    #         data = self.cursor.execute(sql)
-    #         result = data.fetchall()
-    #         return result
-    #     except Exception as e:
-    #         logger.exception('异常SQL：' + sql)
-    #
-    # # 执行update、delete、命令等
-    # def db_excute_sql(self, sql):
-    #     cursor = self.conn.cursor()
-    #     try:
-    #         cursor.execute(sql)
-    #     except Exception as e:
-    #         pass
-    #         logger.exception('异常SQL：' + sql)
-    #     self.conn.commit()
-    #     cursor.close()
-    #     return True
-
     def __init__(self):
-        pass
+        self.cursor = connection.cursor()
 
-    def db_table_data(self, table_name, columns, condition, sql=None):
-        cls = rs.import_table(table_name)
-        print(table_name, sql)
-        a = {'condition': 'up_code="0"', 'table_name': 'SysMenu', 'columns': 'code,code_name,type', 'sql': 'select * from dual'}
-        b = "{'condition': 'up_code=0', 'sql': 'select * from dual', 'columns': 'code,code_name,type', 'table_name': 'SysMenu'}"
+    def _dictfetchall(self):
+        # 将游标返回的结果保存到一个字典对象中
+        desc = self.cursor.description
+        return [dict(zip([col[0] for col in desc], row)) for row in self.cursor.fetchall()]
+
+    # 执行sql查询语句
+    def db_query_sql(self, sql):
+        try:
+            self.cursor.execute(sql)
+            result = self._dictfetchall()
+            return result
+        except Exception as e:
+            logger.exception('异常SQL：' + sql)
+
+    # 执行update、delete、命令等
+    def db_excute_sql(self, sql):
+        try:
+            self.cursor.execute(sql)
+        except Exception as e:
+            logger.exception('异常SQL：' + sql)
         return True
+
+    def db_table_data(self, sql, param=None):
+        # print('sql:' + sql, 'param:' + param)
+        if param:
+            sql = sql + ' where ' + param
+        self.cursor.execute(sql)
+        data = self._dictfetchall()
+        count = len(data)
+        table_data = {'code': 0, 'msg': '', 'count': count, 'data': list(data)}
+        table_json = json.dumps(table_data, ensure_ascii=False)
+        return table_json
 
 
 class OtherFunctions:
