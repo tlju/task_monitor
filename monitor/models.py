@@ -81,7 +81,7 @@ class TaskList(models.Model):
     no = models.IntegerField('编号')
     name = models.CharField('名称', max_length=256, blank=True, null=True)
     content = models.CharField('操作内容', max_length=256, blank=True, null=True)
-    type = models.CharField('类型', max_length=1, choices=(('1', '任务'), ('2', '步骤')))
+    type = models.CharField('类型', max_length=1, choices=(('1', '任务'), ('2', '步骤'), ('3', '批量任务')))
     up = models.IntegerField('所属任务编号')
     param = models.CharField('自定义参数', max_length=5000, blank=True, null=True)
     ploy = models.CharField('定时策略', max_length=2, blank=True, null=True, choices=(('1', '秒'), ('2', '分钟'), ('3', '小时'), ('4', '天'),
