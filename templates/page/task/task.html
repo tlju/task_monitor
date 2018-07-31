@@ -50,14 +50,15 @@
                 limits: [10, 30, 60, 100],
                 limit: 10,
                 cellMinWidth: 200,
-                where: {condition: '{"type":"1","up":0}', columns: '', keyword: ''},
+                where: {condition: '{"up":0}', columns: '', keyword: ''},
                 cols: [[{field: 'no', title: '编号', align: 'center', width: 80},
                     {field: 'name', title: '名称', edit: 'text', width: 200},
                     {field: 'content', title: '操作说明', edit: 'text', width: 250},
                     {field: 'param', title: '附加参数', event: 'setParam'},
                     {field: 'ploy', title: '执行策略', edit: 'text', width: 80},
                     {field: 'time_set', title: '时间设置', edit: 'text', width: 80},
-                    {field: 'remark', title: '备注', edit: 'text', width: 150},
+                    {field: 'type', title: '类型', width: 80},
+                    {field: 'remark', title: '备注', edit: 'text', width: 100},
                     {title: '操作', align: 'center', toolbar: '#mainBar', width: 100}
                 ]],
                 page: true
@@ -66,7 +67,7 @@
             form.on('submit(search)', function (data) {
                 table.reload('mainTable', {
                     method: 'POST',
-                    where: {condition: '{"type":"1","up":0}', columns: 'no,name,content,param,remark', keyword: data.field.keyword}
+                    where: {condition: '{"up":0}', columns: 'no,name,content,param,remark', keyword: data.field.keyword}
                 });
                 return false;
             });
@@ -118,10 +119,6 @@
                     layEvent = obj.event;
                 if (layEvent === 'delTask') {
                     layer.confirm('确认是否删除任务 ' + data.name + ' ？,会一并删除关联的所有步骤！', {btn: ['是', '否']}, function () {
-                        $.ajax({ //删除
-                            url: '/monitor/delete/?code=2', type: 'POST',
-                            data: '{"id":"","condition":{"type":"2","up":"' + data.no + '"}}'
-                        });
                         $.ajax({
                             url: '/monitor/delete/?code=11', type: 'POST',
                             data: '{"id":"","condition":{"task":"' + data.no + '"}}'
@@ -416,6 +413,7 @@
                         <div class="layui-input-block" lay-filter="radio_type">
                             <input type="radio" id="radio_task" name="type" value="1" title="任务">
                             <input type="radio" id="radio_step" name="type" value="2" title="步骤">
+                            <input type="radio" id="radio_step" name="type" value="3" title="批量任务">
                         </div>
                     </div>
                     <div class="layui-form-item">
