@@ -21,6 +21,10 @@
             <a class="layui-btn layui-btn-xs" lay-event="editStep"><i class="layui-icon">&#xe642;</i></a><!--编辑步骤-->
             <a class="layui-btn layui-btn-xs" lay-event="delStep"><i class="layui-icon">&#xe640;</i></a><!--删除步骤-->
         </script>
+        <script type="text/html" id="stepBar2">
+            <a class="layui-btn layui-btn-xs" lay-event="editStep2"><i class="layui-icon">&#xe642;</i></a><!--编辑子任务-->
+            <a class="layui-btn layui-btn-xs" lay-event="delStep2"><i class="layui-icon">&#xe640;</i></a><!--删除子任务-->
+        </script>
         <script type="text/html" id="ployTpl">
             <select>
                 <option value="">-</option>
@@ -148,32 +152,63 @@
                         obj.update({param: value});//同步更新表格和缓存对应的值
                     });
                 } else if (layEvent === 'addStep') {
-                    index3 = layer.open({
-                        type: 1,
-                        title: '编辑 ' + data.name + ' 步骤',
-                        area: ['1000px', '600px'],
-                        content: $('#stepPanel'),
-                        success: function (index, id) {
-                            table.render({
-                                elem: '#stepTable',
-                                url: '/monitor/data/?code=2',
-                                cellMinWidth: 60,
-                                method: 'POST',
-                                height: 'full-378',
-                                where: {condition: '{"type":"2","up":' + data.no + '}', columns: '', keyword: ''},
-                                cols: [[
-                                    {field: 'no', title: '编号', width: 60, fixed: 'left', align: 'center'},
-                                    {field: 'name', title: '步骤名'},
-                                    {fixed: 'right', title: '操作', width: 160, align: 'center', toolbar: '#stepBar'}
-                                ]],
-                                page: true
-                            });
-                            active_task = data.no;
-                            active_task_id = data.id;
-                        }
-                    });
+                    //console.log(data);
+                    if (data.type === '任务') {
+                        index3 = layer.open({
+                            type: 1,
+                            title: '编辑 ' + data.name + ' 步骤',
+                            area: ['1000px', '600px'],
+                            content: $('#stepPanel'),
+                            success: function (index, id) {
+                                table.render({
+                                    elem: '#stepTable',
+                                    url: '/monitor/data/?code=2',
+                                    cellMinWidth: 60,
+                                    method: 'POST',
+                                    height: 'full-378',
+                                    where: {condition: '{"type":"2","up":' + data.no + '}', columns: '', keyword: ''},
+                                    cols: [[
+                                        {field: 'no', title: '编号', width: 60, fixed: 'left', align: 'center'},
+                                        {field: 'name', title: '步骤名'},
+                                        {fixed: 'right', title: '操作', width: 160, align: 'center', toolbar: '#stepBar'}
+                                    ]],
+                                    page: true
+                                });
+                                active_task = data.no;
+                                active_task_id = data.id;
+                            }
+                        });
+                    } else {
+                        //批量任务、循环任务
+                        index3_2 = layer.open({
+                            type: 1,
+                            title: '编辑 ' + data.name + ' 任务组',
+                            area: ['1000px', '600px'],
+                            content: $('#stepPanel2'),
+                            success: function (index, id) {
+                                table.render({
+                                    elem: '#stepTable2',
+                                    url: '/monitor/data/?code=2',
+                                    cellMinWidth: 60,
+                                    method: 'POST',
+                                    height: 'full-378',
+                                    where: {condition: '{"type":"2","up":' + data.no + '}', columns: '', keyword: ''},
+                                    cols: [[
+                                        {field: 'no', title: '编号', width: 60, fixed: 'left', align: 'center'},
+                                        {field: 'name', title: '子任务'},
+                                        {fixed: 'right', title: '操作', width: 160, align: 'center', toolbar: '#stepBar2'}
+                                    ]],
+                                    page: true
+                                });
+                                active_task = data.no;
+                                active_task_id = data.id;
+                            }
+                        });
+                    }
+
                 }
             });
+            //添加步骤的
             $('#add_step').on('click', function () {
                 $('#addStepPanelForm').children("div[name='data-item']").remove();
                 index4 = layer.open({
@@ -413,7 +448,8 @@
                         <div class="layui-input-block" lay-filter="radio_type">
                             <input type="radio" id="radio_task" name="type" value="1" title="任务">
                             <input type="radio" id="radio_step" name="type" value="2" title="步骤">
-                            <input type="radio" id="radio_step" name="type" value="3" title="批量任务">
+                            <input type="radio" id="radio_batch" name="type" value="3" title="批量任务">
+                            <input type="radio" id="radio_cycle" name="type" value="4" title="循环任务">
                         </div>
                     </div>
                     <div class="layui-form-item">
@@ -468,6 +504,16 @@
             </div>
             <div class="layui-card-body">
                 <table lay-filter="stepTable" id="stepTable"></table>
+            </div>
+        </div>
+    </div>
+    <div id="stepPanel2" style="display: none">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <button class="layui-btn layui-btn-sm" lay-submit="" lay-filter="add_step2" id="add_step2">新增子任务</button>
+            </div>
+            <div class="layui-card-body">
+                <table lay-filter="stepTable2" id="stepTable2"></table>
             </div>
         </div>
     </div>

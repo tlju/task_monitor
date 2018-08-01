@@ -35,7 +35,7 @@
             $.ajax({
                 url: '/monitor/data/?code=2', type: 'POST',
                 //data:'{"condition":{"type":"1","up":0}}',
-                data: {condition: '{"type":"1","up":0}'},
+                data: {condition: '{"up":0}'},
                 success: function (obj) {
                     var objs = JSON.parse(obj).data;
                     $('#tasklist').empty().append('<option value="">请选择任务</option>');
