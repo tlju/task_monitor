@@ -208,7 +208,7 @@
 
                 }
             });
-            //添加步骤的
+            /////////添加步骤的
             $('#add_step').on('click', function () {
                 $('#addStepPanelForm').children("div[name='data-item']").remove();
                 index4 = layer.open({
@@ -311,6 +311,35 @@
                 });
                 return false;
             });
+            ////////添加子任务
+            $('#add_step2').on('click', function () {
+                index4_2 = layer.open({
+                    type: 1,
+                    title: '新增子任务',
+                    area: ['800px', '400px'],
+                    content: $('#addStepPanel2'),
+                    success: function () {
+                        $.ajax({
+                            url: '/monitor/data/?code=2',
+                            type:'POST',
+                            data: {condition: '{"type":"1","up":"0"}', columns: 'no,name', keyword: ''},
+                            success: function (obj) {
+                                var objs = JSON.parse(obj);
+                                $('#f_task').empty().append('<option value="" selected="selected">请选择子任务</option>');
+                                for (var i in objs.data) {
+                                    $('#f_task').append("<option value=" + objs.data[i].no + ">" + objs.data[i].name + "</option>");
+                                }
+                                form.render('select', 'addStepPanel2'); //更新 lay-filter="addStepPanel2" 所在容器内的全部 select 状态
+                            }
+                        });
+                    }
+                });
+            });
+            form.on('submit(sb_step2)', function (data) {
+                console.log(data);
+                return false;
+            });
+            //步骤
             table.on('tool(stepTable)', function (obj) {
                 var data = obj.data, //得到所在行所有键值
                     layEvent = obj.event;
@@ -414,6 +443,18 @@
                             table.reload('stepTable');
                         }
                     });
+                }
+            });
+            //子任务
+            table.on('tool(stepTable2)', function (obj) {
+                var data = obj.data, //得到所在行所有键值
+                    layEvent = obj.event;
+                active_step = data.no;
+                active_step_id = data.id;
+                if (layEvent === 'editStep2') {
+
+                } else if (layEvent === 'delStep2') {
+
                 }
             });
 
@@ -569,6 +610,42 @@
                     </div>
                 </form>
             </div>
+        </div>
+    </div>
+    <div id="addStepPanel2" style="display: none">
+        <div class="layui-card">
+            <div class="layui-card-body layui-text">
+                <form class="layui-form layui-form-pane" lay-filter="addStepPanel2" id="addStepPanelForm2">
+                    <div class="layui-form-item">
+                        <button class="layui-btn layui-btn-sm" lay-submit="" lay-filter="sb_step2" id="sb_step2">提交子任务</button>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">任务名</label>
+                        <div class="layui-input-block">
+                            <select id="f_task" name="f_task" lay-filter="f_task">
+                                <option value="" selected="selected">请选择子任务</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div id="editStepPanel2" style="display: none">
+        <div class="layui-card-body layui-text">
+            <form class="layui-form layui-form-pane" lay-filter="editStepPanel2" id="editStepPanelForm2">
+                <div class="layui-form-item">
+                    <button class="layui-btn layui-btn-sm" lay-submit="" lay-filter="sb_step3" id="sb_step3">提交子任务</button>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">任务名</label>
+                    <div class="layui-input-block">
+                        <select id="f_task1" name="f_task1" lay-filter="f_task1">
+                            <option value="" selected="selected">请选择子任务</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 {% endblock %}
