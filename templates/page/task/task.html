@@ -22,7 +22,6 @@
             <a class="layui-btn layui-btn-xs" lay-event="delStep"><i class="layui-icon">&#xe640;</i></a><!--删除步骤-->
         </script>
         <script type="text/html" id="stepBar2">
-            <a class="layui-btn layui-btn-xs" lay-event="editStep2"><i class="layui-icon">&#xe642;</i></a><!--编辑子任务-->
             <a class="layui-btn layui-btn-xs" lay-event="delStep2"><i class="layui-icon">&#xe640;</i></a><!--删除子任务-->
         </script>
         <script type="text/html" id="ployTpl">
@@ -96,7 +95,7 @@
                     type: 'POST',
                     data: '{"id":"","condition":' + JSON.stringify(data.field) + '}',
                     success: function () {
-                        layer.alert('保存成功！', {icon: 1});
+                        layer.msg('保存成功！', {icon: 1});
                         layer.close(index1);
                         table.reload('mainTable'); //刷新表格，解决打开form不是新提交的数据
                     }
@@ -299,8 +298,8 @@
                                     type: 'POST',
                                     data: '{"id":"","condition":{"task":' + active_task + ',"step":' + active_step + ',"func":' + active_function + ',"value":' + JSON.stringify(data.field) + '}}',
                                     success: function () {
-                                        layer.alert('{"id":"","condition":{"task":' + active_task + ',"step":' + active_step + ',"func":' + active_function + ',"value":' + JSON.stringify(data.field) + '}}');
-                                        layer.alert('保存成功！', {icon: 1});
+                                        //layer.alert('{"id":"","condition":{"task":' + active_task + ',"step":' + active_step + ',"func":' + active_function + ',"value":' + JSON.stringify(data.field) + '}}');
+                                        layer.msg('保存成功！', {icon: 1});
                                         layer.close(index4);
                                         table.reload('stepTable');
                                     }
@@ -321,7 +320,7 @@
                     success: function () {
                         $.ajax({
                             url: '/monitor/data/?code=2',
-                            type:'POST',
+                            type: 'POST',
                             data: {condition: '{"type":"1","up":"0"}', columns: 'no,name', keyword: ''},
                             success: function (obj) {
                                 var objs = JSON.parse(obj);
@@ -336,7 +335,17 @@
                 });
             });
             form.on('submit(sb_step2)', function (data) {
-                console.log(data);
+                //console.log(data);
+                //console.log($('#f_task option[value="' + data.field.f_task + '"]').text());
+                $.ajax({
+                    url: '/monitor/update/?code=2', type: 'POST',
+                    data: '{"id":"","condition":{"name":"' + $('#f_task option[value="' + data.field.f_task + '"]').text() + '","type":"2","up":"' + active_task + '"}}',
+                    success: function () {
+                        layer.msg('保存成功！', {icon: 1});
+                        layer.close(index4_2);
+                        table.reload('stepTable2');
+                    }
+                });
                 return false;
             });
             //步骤
@@ -451,10 +460,15 @@
                     layEvent = obj.event;
                 active_step = data.no;
                 active_step_id = data.id;
-                if (layEvent === 'editStep2') {
-
-                } else if (layEvent === 'delStep2') {
-
+                if (layEvent === 'delStep2') {
+                    $.ajax({
+                        url: '/monitor/delete/?code=2', type: 'POST',
+                        data: '{"id":"' + active_step_id + '","condition":{"up":"' + active_task + '","no":"' + active_step + '"}}',
+                        success:function () {
+                            layer.msg('已删除~');
+                            table.reload('stepTable2');
+                        }
+                    });
                 }
             });
 

@@ -52,10 +52,10 @@ def set_tabledata(code, data):
                 no_max = cls.objects.filter(up=0).aggregate(Max('no'))['no__max']
                 if no_max:
                     cls.objects.create(no=no_max + 1, up=0, **up_data['condition'])
-                    update_variable(no_max + 1, up_data['condition']['param'], up_data['condition']['type'])  # 更新自定义参数表
+                    update_variable(no_max + 1, up_data['condition']['param'])  # 更新自定义参数表
                 else:
                     cls.objects.create(no=1, up=0, **up_data['condition'])
-                    update_variable(1, up_data['condition']['param'], up_data['condition']['type'])  # 更新自定义参数表
+                    update_variable(1, up_data['condition']['param'])  # 更新自定义参数表
             elif up_data['condition']['type'] == '2':
                 no_max = cls.objects.filter(type='2', up=up_data['condition']['up']).aggregate(Max('no'))['no__max']
                 if no_max:
@@ -234,7 +234,7 @@ def import_table(name):
     return cls
 
 
-def update_variable(task_no, variable_param, type):
+def update_variable(task_no, variable_param, type='2'):
     # print(task_no, variable_param)
     Variable.objects.filter(task=task_no, type=type).delete()
     if variable_param or variable_param.count('@') >= 1:
