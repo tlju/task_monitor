@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding:utf-8 -*-
 # 生成任务文件功能
 from monitor.util.allClass import *
@@ -7,11 +6,10 @@ from django.db.models import Q
 from threading import Thread
 from monitor.models import TaskList, TaskListConfig, Functions, FunctionsParam, FunctionsType, Variable, FunctionsPolicy
 import ast
-import json
 
 
 class TaskEngine(Thread):
-    def __init__(self, task_id, parent=None):
+    def __init__(self, task_id, task_variable, parent=None):
         super(TaskEngine, self).__init__(parent)
         self.task_id = task_id
         self.func = Functions.objects.all().values()
@@ -20,20 +18,15 @@ class TaskEngine(Thread):
         self.func_policy = FunctionsPolicy.objects.all().values()
         self.task_step = TaskList.objects.filter(type='2', up=self.task_id).values()
         self.task_step_param = TaskListConfig.objects.filter(task=self.task_id).values()
-        self.task_variable = self.translate(Variable.objects.filter(Q(task__exact=-1) | Q(task__exact=task_id)).values('code', 'value'))
+        # self.task_variable = self.translate(Variable.objects.filter(Q(task__exact=-1) | Q(task__exact=task_id)).values('code', 'value'))
+        self.task_variable = task_variable
         self.recv = {}  # 某些函数返回的对象
+        # print(self.task_variable)
 
     def run(self):
         # 功能声明
-        data = DataFunctions()
-        word = WordFunctions()
-        other = OtherFunctions()
-        excel = ExcelFunctions()
-        control = ControlFunctions()
-        logic = LogicFunctions()
-        ssh = SSHFunctions()
-        ws = WebServiceFunctions()
-        fw = FwyxqkFunctions()
+        for i in self.func_type:
+            exec(i['code'] + ' = ' + i['value'] + '()')  # 动态实例化class
         step_list = []
         for a in self.task_step:
             for b in self.task_step_param:
@@ -122,39 +115,6 @@ class TaskEngine(Thread):
                 result = min(result)
                 # print(result)
                 q.put(result)  # 把触发的异常告警信息放入优先进出队列中
-
-    # 翻译特殊代码
-    def translate(self, variable):
-        variables = []
-        for i in variable:
-            if i['code'] == '@day':
-                if not i['value']:
-                    i['value'] = time.strftime('%Y%m%d', time.localtime(time.time()))
-            elif i['code'] == '@2-yesterday-nyr':
-                now_time = datetime.datetime.now()
-                yes_time = now_time + datetime.timedelta(days=-1)
-                yes_time_nyr = yes_time.strftime('%Y%m%d')
-                if not i['value']:
-                    i['value'] = yes_time_nyr[:4] + '年' + yes_time_nyr[4:6] + '月' + yes_time_nyr[6:] + '日'
-            elif i['code'] == '@yesterday':
-                now_time = datetime.datetime.now()
-                yes_time = now_time + datetime.timedelta(days=-1)
-                yes_time_nyr = yes_time.strftime('%Y%m%d')
-                if not i['value']:
-                    i['value'] = yes_time_nyr
-            elif i['code'] == '@yes-nyr':
-                now_time = datetime.datetime.now()
-                yes_time = now_time + datetime.timedelta(days=-1)
-                yes_time_nyr = yes_time.strftime('%Y%m%d')
-                if not i['value']:
-                    i['value'] = yes_time_nyr[:4] + '-' + yes_time_nyr[4:6] + '-' + yes_time_nyr[6:]
-
-            if '@' in i['value']:
-                for y in variables:
-                    if y['code'] in i['value']:
-                        i['value'] = i['value'].replace(y['code'], y['value'])
-            variables.append(i)
-        return variables
 
 
 class ReadLog(Thread):

@@ -40,6 +40,7 @@ class Functions(models.Model):
 class FunctionsType(models.Model):
     code = models.CharField('代码', max_length=256)
     name = models.CharField('名称', max_length=256)
+    value = models.CharField('代码函数', max_length=256)
 
     class Meta:
         verbose_name = '系统函数类型表'
@@ -142,12 +143,13 @@ class Variable(models.Model):
     code = models.CharField('代码', max_length=64)
     name = models.CharField('代码名称', max_length=256)
     value = models.CharField('代码值', max_length=256, null=True, blank=True)
-    type = models.CharField('类型', max_length=2, choices=(('1', '系统变量'), ('2', '任务变量')), default='1')
+    type = models.CharField('类型', max_length=2, choices=(('1', '系统变量'), ('2', '任务变量'), ('3', '循环任务变量')))
     task = models.IntegerField('所属任务', default=-1)
 
     class Meta:
         verbose_name = '系统变量表'
         verbose_name_plural = '系统变量表'
+        unique_together = ('id', 'code')
 
 
 class PolicyLog(models.Model):

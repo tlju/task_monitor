@@ -26,7 +26,7 @@ class AdminFunctions(admin.ModelAdmin):
 
 
 class AdminFunctionsType(admin.ModelAdmin):
-    list_display = ('id', 'code', 'name')
+    list_display = ('id', 'code', 'name', 'value')
     ordering = ('id',)
 
 

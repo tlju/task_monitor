@@ -8,12 +8,61 @@ from django.db import connection
 from django.db.models.aggregates import Max, Min, Count
 import json, time, datetime, ast
 from monitor.util.taskEngine import TaskEngine
-from monitor.models import Variable
+from monitor.models import Variable, TaskList
 
 
 def task_start(no):
-    t = TaskEngine(no)
-    t.start()
+    task_type = TaskList.objects.filter(no=no).exclude(type='2').values()[0]['type']  # 获取任务类别，根据类别来分别执行
+    sub_task = list(TaskList.objects.filter(up=no).values('no'))
+    task_variable = translate(Variable.objects.filter(type__in=['1', '2'], task__in=[-1, no]).values('code', 'value', 'name'))
+    if len(sub_task):
+        for i in sub_task:
+            task_variable += translate(Variable.objects.filter(type='2', task=i['no']).values('code', 'value', 'name'))
+        task_variable = [dict(t) for t in {tuple(d.items()) for d in task_variable}]  # 列表字典去重 https://stackoverflow.com/questions/9427163/remove-duplicate-dict-in-list-in-python
+        if task_type == '3':
+            for i in sub_task:
+                t = TaskEngine(i['no'], task_variable)
+                t.start()
+                time.sleep(1)
+        elif task_type == '4':
+            start, end, date_type = None, None, None
+            for i in task_variable:
+                if i['code'] == '@loop_start_date':
+                    start = datetime.datetime.strptime(i['value'], i['name'])
+                    date_type = i['name']
+                elif i['code'] == '@loop_end_date':
+                    end = datetime.datetime.strptime(i['value'], i['name'])
+                elif i['code'] == '@loop_start_num':
+                    start = i['value']
+                elif i['code'] == '@loop_end_num':
+                    end = i['value']
+            # print(start, end) start.strftime(date_type)
+            for i in sub_task:
+                current_variable_all = []
+                if not str(start).isdigit():
+                    while start <= end:
+                        current_variable = []
+                        for x, y in enumerate(task_variable):
+                            # print(x,y,y['value'].replace('@current',start.strftime(date_type)))
+                            current_variable.append({'code': y['code'], 'name': y['name'], 'value': y['value'].replace('@current', start.strftime(date_type))})
+                        current_variable_all.append(current_variable)
+                        start += datetime.timedelta(days=1)
+                else:
+                    while start <= end:
+                        current_variable = []
+                        for x, y in enumerate(task_variable):
+                            current_variable.append({'code': y['code'], 'name': y['name'], 'value': y['value'].replace('@current', start.strftime(date_type))})
+                        current_variable_all.append(current_variable)
+                        start += 1
+                # print(current_variable_all)
+                for variable in current_variable_all:
+                    # print(i, variable)
+                    t = TaskEngine(i['no'], variable)
+                    t.start()
+                    time.sleep(1)
+    else:
+        t = TaskEngine(no, task_variable)
+        t.start()
 
 
 def del_tabledata(code, data):
@@ -62,6 +111,8 @@ def set_tabledata(code, data):
                     cls.objects.create(no=no_max + 1, **up_data['condition'])
                 else:
                     cls.objects.create(no=1, **up_data['condition'])
+            elif up_data['condition']['type'] == '5':
+                cls.objects.create(**up_data['condition'])
         elif table == 'TaskListConfig':
             up_data['condition']['value'] = json.dumps(up_data['condition']['value'])  # 存到数据库为json字符串
             cls.objects.create(**up_data['condition'])
@@ -244,3 +295,38 @@ def update_variable(task_no, variable_param, type='2'):
                     **{'value': i.split('=')[1][:-1], 'code': i.split('=')[0].split('|')[0], 'name': i.split('=')[0].split('|')[1], 'type': type, 'task': task_no})
             except Exception:
                 print('Variable error')
+
+
+# 翻译特殊代码
+def translate(variable):
+    variables = []
+    current = None  # 循环任务所用的变量值
+    for i in variable:
+        if i['code'] == '@day':
+            if not i['value']:
+                i['value'] = time.strftime('%Y%m%d', time.localtime(time.time()))
+        elif i['code'] == '@2-yesterday-nyr':
+            now_time = datetime.datetime.now()
+            yes_time = now_time + datetime.timedelta(days=-1)
+            yes_time_nyr = yes_time.strftime('%Y%m%d')
+            if not i['value']:
+                i['value'] = yes_time_nyr[:4] + '年' + yes_time_nyr[4:6] + '月' + yes_time_nyr[6:] + '日'
+        elif i['code'] == '@yesterday':
+            now_time = datetime.datetime.now()
+            yes_time = now_time + datetime.timedelta(days=-1)
+            yes_time_nyr = yes_time.strftime('%Y%m%d')
+            if not i['value']:
+                i['value'] = yes_time_nyr
+        elif i['code'] == '@yes-nyr':
+            now_time = datetime.datetime.now()
+            yes_time = now_time + datetime.timedelta(days=-1)
+            yes_time_nyr = yes_time.strftime('%Y%m%d')
+            if not i['value']:
+                i['value'] = yes_time_nyr[:4] + '-' + yes_time_nyr[4:6] + '-' + yes_time_nyr[6:]
+
+        if '@' in i['value']:
+            for y in variables:
+                if y['code'] in i['value']:
+                    i['value'] = i['value'].replace(y['code'], y['value'])
+        variables.append(i)
+    return variables

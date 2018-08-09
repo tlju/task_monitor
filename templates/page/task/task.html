@@ -191,9 +191,9 @@
                                     cellMinWidth: 60,
                                     method: 'POST',
                                     height: 'full-378',
-                                    where: {condition: '{"type":"2","up":' + data.no + '}', columns: '', keyword: ''},
+                                    where: {condition: '{"type":"5","up":' + data.no + '}', columns: '', keyword: ''},
                                     cols: [[
-                                        {field: 'no', title: '编号', width: 60, fixed: 'left', align: 'center'},
+                                        {field: 'no', title: '子任务编号', width: 100, fixed: 'left', align: 'center'},
                                         {field: 'name', title: '子任务'},
                                         {fixed: 'right', title: '操作', width: 160, align: 'center', toolbar: '#stepBar2'}
                                     ]],
@@ -339,7 +339,7 @@
                 //console.log($('#f_task option[value="' + data.field.f_task + '"]').text());
                 $.ajax({
                     url: '/monitor/update/?code=2', type: 'POST',
-                    data: '{"id":"","condition":{"name":"' + $('#f_task option[value="' + data.field.f_task + '"]').text() + '","type":"2","up":"' + active_task + '"}}',
+                    data: '{"id":"","condition":{"name":"' + $('#f_task option[value="' + data.field.f_task + '"]').text() + '","type":"5","up":"' + active_task + '","no":"' + data.field.f_task + '"}}',
                     success: function () {
                         layer.msg('保存成功！', {icon: 1});
                         layer.close(index4_2);
@@ -464,7 +464,7 @@
                     $.ajax({
                         url: '/monitor/delete/?code=2', type: 'POST',
                         data: '{"id":"' + active_step_id + '","condition":{"up":"' + active_task + '","no":"' + active_step + '"}}',
-                        success:function () {
+                        success: function () {
                             layer.msg('已删除~');
                             table.reload('stepTable2');
                         }
