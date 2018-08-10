@@ -11,7 +11,7 @@ from PIL import Image, ImageDraw, ImageFont
 from urllib.request import Request
 from urllib.request import urlopen
 from lxml import etree
-# from monitor.otherModels import *
+from monitor.otherModels import *
 from monitor.util.preload import logger
 from jpype import *
 from django.db import connection

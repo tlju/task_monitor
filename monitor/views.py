@@ -6,7 +6,7 @@ from monitor.util import getResource as rs
 from dwebsocket.decorators import accept_websocket
 import os, time
 
-#preload.loading()
+preload.loading()
 
 
 @accept_websocket

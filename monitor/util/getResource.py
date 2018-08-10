@@ -13,7 +13,7 @@ from monitor.models import Variable, TaskList
 
 def task_start(no):
     task_type = TaskList.objects.filter(no=no).exclude(type='2').values()[0]['type']  # 获取任务类别，根据类别来分别执行
-    sub_task = list(TaskList.objects.filter(up=no).values('no'))
+    sub_task = list(TaskList.objects.filter(up=no).exclude(type='2').values('no'))
     task_variable = translate(Variable.objects.filter(type__in=['1', '2'], task__in=[-1, no]).values('code', 'value', 'name'))
     if len(sub_task):
         for i in sub_task:
