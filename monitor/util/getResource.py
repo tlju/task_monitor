@@ -8,7 +8,7 @@ from django.db import connection
 from django.db.models.aggregates import Max, Min, Count
 import json, time, datetime, ast
 from monitor.util.taskEngine import TaskEngine
-from monitor.models import Variable, TaskList
+from monitor.models import Variable, TaskList, TaskListConfig
 
 
 def task_start(no):
@@ -21,7 +21,8 @@ def task_start(no):
         task_variable = [dict(t) for t in {tuple(d.items()) for d in task_variable}]  # 列表字典去重 https://stackoverflow.com/questions/9427163/remove-duplicate-dict-in-list-in-python
         if task_type == '3':
             for i in sub_task:
-                t = TaskEngine(i['no'], task_variable)
+                task_step_param = TaskListConfig.objects.filter(task=i['no']).values()
+                t = TaskEngine(i['no'], task_variable, task_step_param)
                 t.start()
                 time.sleep(1)
         elif task_type == '4':
@@ -57,11 +58,13 @@ def task_start(no):
                 # print(current_variable_all)
                 for variable in current_variable_all:
                     # print(i, variable)
-                    t = TaskEngine(i['no'], variable)
+                    task_step_param = TaskListConfig.objects.filter(task=i['no']).values()
+                    t = TaskEngine(i['no'], variable, task_step_param)
                     t.start()
                     time.sleep(1)
     else:
-        t = TaskEngine(no, task_variable)
+        task_step_param = TaskListConfig.objects.filter(task=no).values()
+        t = TaskEngine(no, task_variable, task_step_param)
         t.start()
 
 
