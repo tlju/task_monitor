@@ -9,20 +9,20 @@ import ast
 
 
 class TaskEngine(Thread):
-    def __init__(self, task_id, task_variable, task_step_param, parent=None):
+    def __init__(self, task_id, task_variable, task_step, task_step_param, parent=None):
         super(TaskEngine, self).__init__(parent)
         self.task_id = task_id
         self.func = Functions.objects.all().values()
         self.func_param = FunctionsParam.objects.all().values()
         self.func_type = FunctionsType.objects.all().values()
         self.func_policy = FunctionsPolicy.objects.all().values()
-        self.task_step = TaskList.objects.filter(type='2', up=self.task_id).values()
-        # self.task_step_param = TaskListConfig.objects.filter(task=self.task_id).values()
+        self.task_step = task_step
         self.task_step_param = task_step_param
-        # self.task_variable = self.translate(Variable.objects.filter(Q(task__exact=-1) | Q(task__exact=task_id)).values('code', 'value'))
         self.task_variable = task_variable
         self.recv = {}  # 某些函数返回的对象
         # print(self.task_variable)
+        # print(self.task_step)
+        # print(self.task_step_param)
 
     def run(self):
         # 功能声明

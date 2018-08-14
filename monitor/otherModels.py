@@ -4,8 +4,8 @@ from django.db import models
 
 # 服务运行情况涉及表
 class fwyxqk(models.Model):
-    begin_date = models.CharField('开始日期', max_length=8)
-    end_date = models.CharField('结束日期',max_length=8)
+    begin_date = models.CharField('开始日期', max_length=10)
+    end_date = models.CharField('结束日期', max_length=10)
     domain_name = models.CharField('服务域', max_length=256)
     service_code = models.CharField('服务UUID', max_length=256)
     service_name = models.CharField('服务名称', max_length=256)
@@ -28,8 +28,8 @@ class fwyxqk(models.Model):
 class fwyxqk_sort(models.Model):
     type = models.CharField('服务类型', max_length=2,
                             choices=(('1', 'JMS监听服务'), ('2', '业务协同考核'), ('3', '集中认证服务'), ('4', '异常TOP20'), ('5', '高频调用服务')))
-    begin_date = models.CharField('开始日期', max_length=8)
-    end_date = models.CharField('结束日期', max_length=8)
+    begin_date = models.CharField('开始日期', max_length=10)
+    end_date = models.CharField('结束日期', max_length=10)
     no = models.IntegerField('编号')
     service_code = models.CharField('服务UUID', max_length=256)
     service_name = models.CharField('服务名称', max_length=256)

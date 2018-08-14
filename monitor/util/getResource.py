@@ -14,17 +14,16 @@ from monitor.models import Variable, TaskList, TaskListConfig
 def task_start(no):
     task_type = TaskList.objects.filter(no=no).exclude(type='2').values()[0]['type']  # 获取任务类别，根据类别来分别执行
     sub_task = list(TaskList.objects.filter(up=no).exclude(type='2').values('no'))
-    task_variable = translate(Variable.objects.filter(type__in=['1', '2'], task__in=[-1, no]).values('code', 'value', 'name'))
+    task_variable = list(Variable.objects.filter(type__in=['1', '2'], task__in=[-1, no]).values('code', 'value', 'name'))
     if len(sub_task):
-        for i in sub_task:
-            task_variable += translate(Variable.objects.filter(type='2', task=i['no']).values('code', 'value', 'name'))
+        task_variable += list(Variable.objects.filter(type='2', task__in=[x['no'] for x in sub_task]).values('code', 'value', 'name'))
         task_variable = [dict(t) for t in {tuple(d.items()) for d in task_variable}]  # 列表字典去重 https://stackoverflow.com/questions/9427163/remove-duplicate-dict-in-list-in-python
+        task_variable = translate(task_variable)
         if task_type == '3':
-            for i in sub_task:
-                task_step_param = TaskListConfig.objects.filter(task=i['no']).values()
-                t = TaskEngine(i['no'], task_variable, task_step_param)
-                t.start()
-                time.sleep(1)
+            task_step = TaskList.objects.filter(type='2', up__in=[x['no'] for x in sub_task]).values()
+            task_step_param = TaskListConfig.objects.filter(task__in=[x['no'] for x in sub_task]).values()
+            t = TaskEngine(no, task_variable, task_step, task_step_param)
+            t.start()
         elif task_type == '4':
             start, end, date_type = None, None, None
             for i in task_variable:
@@ -38,33 +37,33 @@ def task_start(no):
                 elif i['code'] == '@loop_end_num':
                     end = i['value']
             # print(start, end) start.strftime(date_type)
-            for i in sub_task:
-                current_variable_all = []
-                if not str(start).isdigit():
-                    while start <= end:
-                        current_variable = []
-                        for x, y in enumerate(task_variable):
-                            # print(x,y,y['value'].replace('@current',start.strftime(date_type)))
-                            current_variable.append({'code': y['code'], 'name': y['name'], 'value': y['value'].replace('@current', start.strftime(date_type))})
-                        current_variable_all.append(current_variable)
-                        start += datetime.timedelta(days=1)
-                else:
-                    while start <= end:
-                        current_variable = []
-                        for x, y in enumerate(task_variable):
-                            current_variable.append({'code': y['code'], 'name': y['name'], 'value': y['value'].replace('@current', start.strftime(date_type))})
-                        current_variable_all.append(current_variable)
-                        start += 1
-                # print(current_variable_all)
-                for variable in current_variable_all:
-                    # print(i, variable)
-                    task_step_param = TaskListConfig.objects.filter(task=i['no']).values()
-                    t = TaskEngine(i['no'], variable, task_step_param)
-                    t.start()
-                    time.sleep(1)
+            current_variable_all = []
+            if not str(start).isdigit():
+                while start <= end:
+                    current_variable = []
+                    for x, y in enumerate(task_variable):
+                        # print(x,y,y['value'].replace('@current',start.strftime(date_type)))
+                        current_variable.append({'code': y['code'], 'name': y['name'], 'value': y['value'].replace('@current', start.strftime(date_type))})
+                    current_variable_all.append(current_variable)
+                    start += datetime.timedelta(days=1)
+            else:
+                while start <= end:
+                    current_variable = []
+                    for x, y in enumerate(task_variable):
+                        current_variable.append({'code': y['code'], 'name': y['name'], 'value': y['value'].replace('@current', start.strftime(date_type))})
+                    current_variable_all.append(current_variable)
+                    start += 1
+            task_step = TaskList.objects.filter(type='2', up__in=[x['no'] for x in sub_task]).values()
+            task_step_param = TaskListConfig.objects.filter(task__in=[x['no'] for x in sub_task]).values()
+            for variable in current_variable_all:
+                #print(no, 'variable:',variable, 'task_step:',task_step, 'task_step_param:',task_step_param)
+                t = TaskEngine(no, variable, task_step, task_step_param)
+                t.start()
+                time.sleep(2)
     else:
+        task_step = TaskList.objects.filter(type='2', up=no).values()
         task_step_param = TaskListConfig.objects.filter(task=no).values()
-        t = TaskEngine(no, task_variable, task_step_param)
+        t = TaskEngine(no, task_variable, task_step, task_step_param)
         t.start()
 
 
@@ -303,7 +302,6 @@ def update_variable(task_no, variable_param, type='2'):
 # 翻译特殊代码
 def translate(variable):
     variables = []
-    current = None  # 循环任务所用的变量值
     for i in variable:
         if i['code'] == '@day':
             if not i['value']:
