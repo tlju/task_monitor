@@ -70,13 +70,13 @@ class SMSSender:
                             count(1) AS alarmcount,
                             '08' AS alarmcate,'01' AS alarmtype,'01' AS alarmstatus,'0300' AS areacode,
                             GROUP_CONCAT(ipaddress, ';') AS ipaddress,
-                            datetime ('now', 'localtime') AS time,
+                            now() AS time,
                             min(alarmtime) AS firsttime,
                             max(alarmtime) AS endtime 
                         FROM monitor_policylog 
                         WHERE alarmlevel = '%s'
                         and AlarmTime between '%s' and '%s'
-                        GROUP BY func_id,task_id,step_id,alarmlevel,alarmcontent,policy_id) 
+                        GROUP BY func_id,task_id,step_id,alarmlevel,alarmcontent,policy_id) AS t
                         GROUP BY policy,originalid,maindata,alarmid,alarmlevel,alarmcount,alarmcount,alarmcate,
                         alarmtype,alarmstatus,ipaddress,time,firsttime,endtime"""
         self.level_01 = 60

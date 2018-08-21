@@ -19,12 +19,12 @@ def task_start(no):
         task_variable += list(Variable.objects.filter(type='2', task__in=[x['no'] for x in sub_task]).values('code', 'value', 'name'))
         task_variable = [dict(t) for t in {tuple(d.items()) for d in task_variable}]  # 列表字典去重 https://stackoverflow.com/questions/9427163/remove-duplicate-dict-in-list-in-python
         task_variable = translate(task_variable)
-        if task_type == '3':
+        if task_type == '3':  # 批量
             task_step = TaskList.objects.filter(type='2', up__in=[x['no'] for x in sub_task]).values()
             task_step_param = TaskListConfig.objects.filter(task__in=[x['no'] for x in sub_task]).values()
             t = TaskEngine(no, task_variable, task_step, task_step_param)
             t.start()
-        elif task_type == '4':
+        elif task_type == '4':  # 循环
             start, end, date_type = None, None, None
             for i in task_variable:
                 if i['code'] == '@loop_start_date':
@@ -44,22 +44,33 @@ def task_start(no):
                     for x, y in enumerate(task_variable):
                         # print(x,y,y['value'].replace('@current',start.strftime(date_type)))
                         current_variable.append({'code': y['code'], 'name': y['name'], 'value': y['value'].replace('@current', start.strftime(date_type))})
+                        current_variable.append({'code': '@current', 'name': '当前循环值', 'value': start.strftime(date_type)})
+                    # print(current_variable)
                     current_variable_all.append(current_variable)
                     start += datetime.timedelta(days=1)
             else:
                 while start <= end:
                     current_variable = []
                     for x, y in enumerate(task_variable):
-                        current_variable.append({'code': y['code'], 'name': y['name'], 'value': y['value'].replace('@current', start.strftime(date_type))})
+                        current_variable.append({'code': y['code'], 'name': y['name'], 'value': y['value'].replace('@current', start)})
+                        current_variable.append({'code': '@current', 'name': '当前循环值', 'value': start})
                     current_variable_all.append(current_variable)
                     start += 1
             task_step = TaskList.objects.filter(type='2', up__in=[x['no'] for x in sub_task]).values()
             task_step_param = TaskListConfig.objects.filter(task__in=[x['no'] for x in sub_task]).values()
-            for variable in current_variable_all:
-                #print(no, 'variable:',variable, 'task_step:',task_step, 'task_step_param:',task_step_param)
-                t = TaskEngine(no, variable, task_step, task_step_param)
+            # print(current_variable_all)
+            threads = []
+            for i in sub_task:
+                for variable in current_variable_all:
+                    # print(i['no'], 'variable:',variable, 'task_step:',task_step, 'task_step_param:',task_step_param)
+                    t = TaskEngine(i['no'], variable, task_step, task_step_param)
+                    t.setDaemon(True)
+                    threads.append(t)
+            # print(threads)
+            for t in threads:
                 t.start()
-                time.sleep(2)
+            for t in threads:
+                t.join()
     else:
         task_step = TaskList.objects.filter(type='2', up=no).values()
         task_step_param = TaskListConfig.objects.filter(task=no).values()
@@ -114,7 +125,16 @@ def set_tabledata(code, data):
                 else:
                     cls.objects.create(no=1, **up_data['condition'])
             elif up_data['condition']['type'] == '5':
-                cls.objects.create(**up_data['condition'])
+                if not up_data['condition'].get('no'):
+                    no_max = cls.objects.filter(up=0).aggregate(Max('no'))['no__max']
+                    if no_max:
+                        cls.objects.create(no=no_max + 1, up=0, **up_data['condition'])
+                        update_variable(no_max + 1, up_data['condition']['param'])  # 更新自定义参数表
+                    else:
+                        cls.objects.create(no=1, up=0, **up_data['condition'])
+                        update_variable(1, up_data['condition']['param'])  # 更新自定义参数表
+                else:
+                    cls.objects.create(**up_data['condition'])
         elif table == 'TaskListConfig':
             up_data['condition']['value'] = json.dumps(up_data['condition']['value'])  # 存到数据库为json字符串
             cls.objects.create(**up_data['condition'])

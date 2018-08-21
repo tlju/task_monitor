@@ -695,6 +695,10 @@ class OtherFunctions:
         else:
             return False
 
+    def output_msg(self, msg):
+        logger.info(msg)
+        return True
+
 
 class WebServiceFunctions:
     def __init__(self):

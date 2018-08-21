@@ -20,6 +20,7 @@ class TaskEngine(Thread):
         self.task_step_param = task_step_param
         self.task_variable = task_variable
         self.recv = {}  # 某些函数返回的对象
+
         # print(self.task_variable)
         # print(self.task_step)
         # print(self.task_step_param)

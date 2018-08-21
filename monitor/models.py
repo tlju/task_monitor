@@ -12,6 +12,7 @@ class SysMenu(models.Model):
     table = models.CharField('所属表', max_length=256, blank=True, null=True)
     icon = models.CharField('图标', max_length=256, blank=True, null=True)
     type = models.CharField('类型', max_length=2)
+    status = models.CharField('状态', max_length=2, choices=(('1', '在用'), ('2', '停用')), default='1')
     remark = models.CharField('备注', max_length=256, blank=True, null=True)
 
     class Meta:
@@ -82,7 +83,7 @@ class TaskList(models.Model):
     no = models.IntegerField('编号')
     name = models.CharField('名称', max_length=256, blank=True, null=True)
     content = models.CharField('操作内容', max_length=256, blank=True, null=True)
-    type = models.CharField('类型', max_length=1, choices=(('1', '任务'), ('2', '步骤'), ('3', '批量任务'), ('4', '循环任务')))
+    type = models.CharField('类型', max_length=1, choices=(('1', '任务'), ('2', '步骤'), ('3', '批量任务'), ('4', '循环任务'), ('5', '子任务')))
     up = models.IntegerField('所属任务编号')
     param = models.CharField('自定义参数', max_length=5000, blank=True, null=True)
     ploy = models.CharField('定时策略', max_length=2, blank=True, null=True, choices=(('1', '秒'), ('2', '分钟'), ('3', '小时'), ('4', '天'),
@@ -94,6 +95,7 @@ class TaskList(models.Model):
     class Meta:
         verbose_name = '任务列表'
         verbose_name_plural = '任务列表'
+        unique_together = ('no', 'type', 'up')
 
 
 class TaskListConfig(models.Model):
