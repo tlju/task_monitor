@@ -9,6 +9,8 @@ from django.db.models.aggregates import Max, Min, Count
 import json, time, datetime, ast
 from monitor.util.taskEngine import TaskEngine
 from monitor.models import Variable, TaskList, TaskListConfig
+from threading import Thread, Lock
+from multiprocessing import Process, Pool
 
 
 def task_start(no):
@@ -23,7 +25,7 @@ def task_start(no):
             task_step = TaskList.objects.filter(type='2', up__in=[x['no'] for x in sub_task]).values()
             task_step_param = TaskListConfig.objects.filter(task__in=[x['no'] for x in sub_task]).values()
             t = TaskEngine(no, task_variable, task_step, task_step_param)
-            t.start()
+            Process(target=t.run()).start()
         elif task_type == '4':  # 循环
             start, end, date_type = None, None, None
             for i in task_variable:
@@ -58,24 +60,18 @@ def task_start(no):
                     start += 1
             task_step = TaskList.objects.filter(type='2', up__in=[x['no'] for x in sub_task]).values()
             task_step_param = TaskListConfig.objects.filter(task__in=[x['no'] for x in sub_task]).values()
-            # print(current_variable_all)
-            threads = []
+
             for i in sub_task:
                 for variable in current_variable_all:
-                    # print(i['no'], 'variable:',variable, 'task_step:',task_step, 'task_step_param:',task_step_param)
-                    t = TaskEngine(i['no'], variable, task_step, task_step_param)
-                    t.setDaemon(True)
-                    threads.append(t)
-            # print(threads)
-            for t in threads:
-                t.start()
-            for t in threads:
-                t.join()
+                    t = TaskEngine(no, variable, task_step, task_step_param)
+                    t.run()
+
+
     else:
         task_step = TaskList.objects.filter(type='2', up=no).values()
         task_step_param = TaskListConfig.objects.filter(task=no).values()
-        t = TaskEngine(no, task_variable, task_step, task_step_param)
-        t.start()
+        t = TaskEngine(no, translate(task_variable), task_step, task_step_param)
+        Process(target=t.run()).start()
 
 
 def del_tabledata(code, data):
@@ -214,7 +210,7 @@ def get_tabledata(table, page, limit, condition, columns, keyword, code_class=No
 # 针对执行sql
 def get_tabledata_sql(page, limit, sql, param_dict, code_class=None):
     # print(param_dict)
-    sql = sql % json.loads(param_dict)
+    if param_dict: sql = sql % json.loads(param_dict)
     # print(sql)
     cursor = connection.cursor()
     cursor.execute(sql)  # cursor.execute('select * from monitor_tasklistconfig')

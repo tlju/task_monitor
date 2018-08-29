@@ -1,15 +1,22 @@
 # -*- coding:utf-8 -*-
-import datetime
-a = 10
-b = 20
 
-while a < b:
-    a += 1
-    print(a)
+import multiprocessing
+import time
 
 
-date = datetime.datetime.now()
+def func(msg):
+    print("msg:", msg)
+    time.sleep(3)
+    print("end")
 
-detester = date.strftime('%Y-%m-%d')
 
-print(detester)
+if __name__ == "__main__":
+    cores = multiprocessing.cpu_count()
+    pool = multiprocessing.Pool()
+    print("Adding tasks...")
+    for i in range(cores):
+        msg = "hello %d" % (i)
+        pool.apply(func, (msg,))  # 维持执行的进程总数为processes，当一个进程执行完毕后会添加新的进程进去
+    print("Starting tasks...")
+    #pool.close()
+    #pool.join()  # 调用join之前，先调用close函数，否则会出错。执行完close后不会有新的进程加入到pool,join函数等待所有子进程结束

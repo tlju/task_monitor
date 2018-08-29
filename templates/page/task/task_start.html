@@ -33,9 +33,8 @@
         layui.use(['form', 'table', 'laydate', 'layer', 'layedit'], function () {
             var form = layui.form, laydate = layui.laydate, table = layui.table, layer = layui.layer, $ = layui.$;
             $.ajax({
-                url: '/monitor/data/?code=2', type: 'POST',
+                url: '/monitor/data/?code=20', type: 'POST',
                 //data:'{"condition":{"type":"1","up":0}}',
-                data: {condition: '{"up":0}'},
                 success: function (obj) {
                     var objs = JSON.parse(obj).data;
                     $('#tasklist').empty().append('<option value="">请选择任务</option>');

@@ -114,6 +114,8 @@ class TaskLog(models.Model):
     task = models.IntegerField('所属任务')
     log_time = models.DateTimeField('日志时间', blank=True, auto_now_add=True)
     log = models.TextField('日志内容', blank=True, null=True)
+    variable = models.TextField('任务参数内容', blank=True, null=True)
+    status = models.IntegerField('状态', choices=((1, '成功'), (2, '失败')))
 
 
 class SysMapping(models.Model):

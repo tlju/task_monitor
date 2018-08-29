@@ -3,7 +3,7 @@ import schedule
 import time
 from threading import Thread
 from monitor.models import TaskList, SysParam
-from monitor.util.taskEngine import TaskEngine
+from monitor.util import getResource as rs
 
 
 # https://blog.csdn.net/kamendula/article/details/51452352
@@ -14,8 +14,7 @@ class MySchedule(Thread):
         self.tasklist = TaskList.objects.filter(type='1', up=0).exclude(ploy='').values('no', 'ploy', 'time_set')
 
     def run_thread(self, task_no):
-        te = TaskEngine(task_no)
-        te.start()
+        rs.task_start(task_no)
 
     def sched(self):
         for i in self.tasklist:

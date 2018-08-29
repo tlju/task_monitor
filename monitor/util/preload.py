@@ -30,7 +30,7 @@ def loading():
 
 
 def load_allmenu():
-    menu = list(SysMenu.objects.all().values())
+    menu = list(SysMenu.objects.filter(status='1').values())
     cache.set('allmenu', menu, None)
 
 

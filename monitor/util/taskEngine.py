@@ -2,15 +2,13 @@
 # 生成任务文件功能
 from monitor.util.allClass import *
 from monitor.util.preload import logger, q
-from django.db.models import Q
 from threading import Thread
-from monitor.models import TaskList, TaskListConfig, Functions, FunctionsParam, FunctionsType, Variable, FunctionsPolicy
+from monitor.models import Functions, FunctionsParam, FunctionsType, FunctionsPolicy, TaskLog
 import ast
 
 
-class TaskEngine(Thread):
-    def __init__(self, task_id, task_variable, task_step, task_step_param, parent=None):
-        super(TaskEngine, self).__init__(parent)
+class TaskEngine:
+    def __init__(self, task_id, task_variable, task_step, task_step_param):
         self.task_id = task_id
         self.func = Functions.objects.all().values()
         self.func_param = FunctionsParam.objects.all().values()
@@ -37,11 +35,10 @@ class TaskEngine(Thread):
                         if str(c['id']) == b['func']:
                             for d in self.func_type:
                                 if d['id'] == c['type_id']:
-                                    b['func_type'] = d['code']
-                            b['step_name'] = a['name']
-                            b['func'] = c['code']
-                            b['func_id'] = c['id']
-                            step_list.append(b)
+                                    step_list.append({'id': a['id'], 'task': b['task'],
+                                                      'step': b['step'], 'step_name': c['name'],
+                                                      'func_id': b['func'], 'func_type': d['code'],
+                                                      'func': c['code'], 'value': b['value']})
         # print(step_list)
         # 执行
         for i in step_list:
@@ -67,6 +64,7 @@ class TaskEngine(Thread):
             else:
                 eval_text = i['func_type'] + '.' + i['func'] + '()'
             logger.info('执行步骤 ' + str(i['step']) + ' ' + i['step_name'] + ' ' + eval_text)
+            # print(eval_text)
             try:
                 result = eval(eval_text)
                 if str(result) == 'False':
@@ -75,23 +73,18 @@ class TaskEngine(Thread):
                 elif str(result) != 'True':
                     # print(result)
                     self.recv['@recv'] = result  # 获取某些函数返回的文本对象
-                    logger.debug(result)
+                    # logger.debug(result)
                     self.inspector(result, i['func_id'], self.task_id, i['step'])
+                # TaskLog.objects.create(task=self.task_id, log='任务:' + str(self.task_id) + ' 步骤 ' + str(i['step']) + ' 执行完毕！', variable=self.task_variable, status=1)
+                logger.info('任务:' + str(self.task_id) + ' 步骤 ' + str(i['step']) + ' 执行完毕！')
+                print('任务:' + str(self.task_id) + ' 步骤 ' + str(i['step']) + ' 执行完毕！')
             except Exception as e:
-                logger.exception(e)
-                break
-        logger.info('任务 ' + str(self.task_id) + ' 执行完毕！')
-        print('任务 ' + str(self.task_id) + ' 执行完毕！')
-        # self.inspector('', 40, self.task_id, 1)
+                # TaskLog.objects.create(task=self.task_id, log=e, variable=self.task_variable, status=2)
+                logger.info('任务:' + str(self.task_id) + ' 步骤 ' + str(i['step']) + ' 执行ERROR！')
+                print('任务:' + str(self.task_id) + ' 步骤 ' + str(i['step']) + ' 执行ERROR！')
 
     # 检查是否触发策略
     def inspector(self, recv, func_id, task_id, step_id):
-        # recv = [{'free': '0', 'pri': 'false', 'threads': '32', 'name': 'MONITOR', 'freethreads': '2', 'max': '65535'},
-        #         {'free': '0', 'pri': 'false', 'threads': '32', 'name': 'CONSOLE', 'freethreads': '32', 'max': '65535'},
-        #         {'free': '0', 'pri': 'false', 'threads': '8', 'name': '_system', 'freethreads': '7', 'max': '16'},
-        #         {'free': '0', 'pri': 'false', 'threads': '32', 'name': 'BPM', 'freethreads': '8', 'max': '65535'},
-        #         {'free': '0', 'pri': 'false', 'threads': '64', 'name': 'Common', 'freethreads': '64', 'max': '65535'},
-        #         {'free': '0', 'pri': 'false', 'threads': '64', 'name': 'JMSCommon', 'freethreads': '54', 'max': '65535'}]
         policy = []
         for i in self.func_policy:
             if i['func_id'] == func_id:
