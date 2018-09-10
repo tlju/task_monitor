@@ -6,10 +6,10 @@ from django.forms.models import model_to_dict
 from django.db.models import Q
 from django.db import connection
 from django.db.models.aggregates import Max, Min, Count
-import json, time, datetime, ast
+from django.http.response import StreamingHttpResponse
+import json, time, datetime, ast, os
 from monitor.util.taskEngine import TaskEngine
 from monitor.models import Variable, TaskList, TaskListConfig
-from threading import Thread, Lock
 from multiprocessing import Process, Pool
 
 
@@ -347,3 +347,23 @@ def translate(variable):
                     i['value'] = i['value'].replace(y['code'], y['value'])
         variables.append(i)
     return variables
+
+
+# 文件下载功能，参数 服务器实际文件路径
+def getFiles(path, bf_size=512):
+    file_path = path
+    f_name = os.path.split(file_path)[1]
+
+    def read_file(file_path, buf_size=bf_size):
+        with open(file_path, "rb") as f:
+            while True:
+                content = f.read(buf_size)
+                if content:
+                    yield content
+                else:
+                    break
+
+    response = StreamingHttpResponse(read_file(file_path))
+    response['Content-Type'] = 'application/octet-stream'
+    response['Content-Disposition'] = 'attachment;filename="{0}"'.format(f_name)
+    return response

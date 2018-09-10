@@ -75,11 +75,11 @@ class TaskEngine:
                     self.recv['@recv'] = result  # 获取某些函数返回的文本对象
                     # logger.debug(result)
                     self.inspector(result, i['func_id'], self.task_id, i['step'])
-                # TaskLog.objects.create(task=self.task_id, log='任务:' + str(self.task_id) + ' 步骤 ' + str(i['step']) + ' 执行完毕！', variable=self.task_variable, status=1)
+                TaskLog.objects.create(task=self.task_id, log='任务:' + str(self.task_id) + ' 步骤 ' + str(i['step']) + ' 执行完毕！', variable=self.task_variable, status=1)
                 logger.info('任务:' + str(self.task_id) + ' 步骤 ' + str(i['step']) + ' 执行完毕！')
                 print('任务:' + str(self.task_id) + ' 步骤 ' + str(i['step']) + ' 执行完毕！')
             except Exception as e:
-                # TaskLog.objects.create(task=self.task_id, log=e, variable=self.task_variable, status=2)
+                TaskLog.objects.create(task=self.task_id, log=e, variable=self.task_variable, status=2)
                 logger.info('任务:' + str(self.task_id) + ' 步骤 ' + str(i['step']) + ' 执行ERROR！')
                 print('任务:' + str(self.task_id) + ' 步骤 ' + str(i['step']) + ' 执行ERROR！')
 
