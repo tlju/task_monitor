@@ -3,3 +3,5 @@ userfiles
 logs
 /monitor/migrations/
 task_monitor.sql
+/test.py
+/test2.py
