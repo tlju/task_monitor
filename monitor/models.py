@@ -143,6 +143,19 @@ class SysParam(models.Model):
         unique_together = ('code', 'param')
 
 
+class SysSetting(models.Model):
+    code = models.CharField('配置代码', max_length=64)
+    code_name = models.CharField('配置名称', max_length=256)
+    value = models.CharField('配置值', max_length=256, null=True, blank=True)
+    flag = models.IntegerField('启用标志', choices=((1, '启用'), (0, '停用')), default=1)
+    memo = models.CharField('备注', max_length=256, null=True, blank=True)
+
+    class Meta:
+        verbose_name = '系统代码表'
+        verbose_name_plural = '系统代码表'
+        unique_together = ('code', 'value')
+
+
 class Variable(models.Model):
     code = models.CharField('代码', max_length=64)
     name = models.CharField('代码名称', max_length=256)
@@ -228,9 +241,11 @@ class AdminInfo(models.Model):
 class Server(models.Model):
     sn = models.CharField('SN号', max_length=64)
     model = models.CharField('系统类型', max_length=1, choices=(('1', 'linux'), ('2', 'windows')), default='1')
+    host_location = models.CharField('主机位置', max_length=1, choices=(('1', '远程'), ('2', '本地')), default='1')
     username = models.CharField('登陆帐号', max_length=32, blank=True, null=True)
     password = models.CharField('密码', max_length=32, blank=True, null=True)
     ipaddress = models.GenericIPAddressField('IP地址', blank=True, null=True)
+    root_path = models.CharField('根目录', max_length=256, blank=True, null=True)
     memo = models.TextField('备注', null=True, blank=True)
     create_at = models.DateTimeField('创建时间', blank=True, auto_now_add=True)
     update_at = models.DateTimeField('修改时间', blank=True, auto_now=True)

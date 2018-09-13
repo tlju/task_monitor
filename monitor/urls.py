@@ -18,4 +18,6 @@ urlpatterns = [
     url(r'^sms/', views.sms_send),  # 发送短信
     url(r'^start/', views.task_start),  # 启动任务
     url(r'^echo/', views.echo_log),  # 获取任务 socket接口
+
+    url(r'^file/', views.file),  # 文件接口
 ]

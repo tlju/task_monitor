@@ -1,25 +1,106 @@
 {% extends 'template.html' %}
 {% block body %}
-    <div class="layui-fluid"  style="padding-bottom: 40px">
-        常规布局（以中型屏幕桌面为例）：
-        <div class="layui-row">
-            <div class="layui-col-md9">
-                你的内容 9/12
+    <div class="layui-card">
+        <div class="layui-card-header">
+            <div class="layui-row layui-bg-gray">
+                <div class="layui-col-md10 layui-col-md-offset3">
+                    <button class="layui-btn layui-btn-sm">创建文件夹</button>
+                    <button class="layui-btn layui-btn-sm">删除文件夹</button>
+                    <button class="layui-btn layui-btn-sm">删除文件</button>
+                    <button class="layui-btn layui-btn-sm">重命名</button>
+                    <button class="layui-btn layui-btn-sm">下载到中转机</button>
+                    <button class="layui-btn layui-btn-sm">下载到本地</button>
+                    <button class="layui-btn layui-btn-sm">上传到中转机</button>
+                    <button class="layui-btn layui-btn-sm">上传到远程服务器</button>
+                </div>
             </div>
-            <div class="layui-col-md3">
-                你的内容 3/12
+        </div>
+        <div class="layui-card-body">
+            <div class="layui-row layui-col-space5">
+                <form class="layui-form">
+                    <div class="layui-col-md1 layui-bg-gray"><label class="layui-form-label">本地服务器</label></div>
+                    <div class="layui-col-md1">
+                        <select class="layui-select" id="local_select" lay-filter="local_select"></select>
+                    </div>
+                    <div class="layui-col-md1 layui-bg-gray"><label class="layui-form-label">本地路径</label></div>
+                    <div class="layui-col-md3">
+                        <input type="text" id="local_path_select" lay-filter="local_path_select" placeholder="选择路径" class="layui-input">
+                    </div>
+                    <div class="layui-col-md1 layui-bg-gray"><label class="layui-form-label">远程服务器</label></div>
+                    <div class="layui-col-md1">
+                        <select class="layui-select" id="remote_select" lay-filter="remote_select"></select>
+                    </div>
+                    <div class="layui-col-md1 layui-bg-gray"><label class="layui-form-label">远程路径</label></div>
+                    <div class="layui-col-md3">
+                        <input type="text" id="remote_path_select" lay-filter="remote_path_select" placeholder="选择路径" class="layui-input">
+                    </div>
+                </form>
+            </div>
+            <div class="layui-row layui-col-space5">
+                <div class="layui-col-md6">
+                    <table class="layui-table" id="table_one"></table>
+                </div>
+                <div class="layui-col-md6">
+                    <table class="layui-table" id="table_two"></table>
+                </div>
+            </div>
+            <div class="layui-row">
+                <form class="layui-form">
+                    <textarea class="layui-textarea" readonly spellcheck="false"></textarea>
+                </form>
             </div>
         </div>
     </div>
-    <div class="layui-fluid">
-        常规布局（以中型屏幕桌面为例）：
-        <div class="layui-row">
-            <div class="layui-col-md9">
-                你的内容 9/12
-            </div>
-            <div class="layui-col-md3">
-                你的内容 3/12
-            </div>
-        </div>
-    </div>
+    <script type="application/javascript">
+        layui.config({base: '/static/js/',});
+        layui.use(['form', 'table', 'treeSelect'], function () {
+            var form = layui.form, table = layui.table, layer = layui.layer, treeSelect = layui.treeSelect, $ = layui.$;
+            var table_1 = table.render({
+                elem: '#table_one',
+                height: 'full-290',
+                cols: [[{type: 'checkbox', fixed: 'left'},
+                    {field: 'name', title: '名称'},
+                    {field: 'modifydate', title: '修改时间'},
+                    {field: 'filetype', title: '类型'},
+                    {field: 'filesize', title: '大小'}]]
+            });
+            var table_2 = table.render({
+                elem: '#table_two',
+                height: 'full-290',
+                cols: [[{type: 'checkbox', fixed: 'left'},
+                    {field: 'name', title: '名称'},
+                    {field: 'modifydate', title: '修改时间'},
+                    {field: 'filetype', title: '类型'},
+                    {field: 'filesize', title: '大小'}]]
+            });
+
+            $.ajax({
+                url: '/monitor/data/?code=18', type: 'POST',
+                success: function (obj) {
+                    var objs = JSON.parse(obj).data;
+                    //console.log(objs);
+                    $('#local_select').empty().append('<option value="">下拉选择</option>');
+                    $('#remote_select').empty().append('<option value="">下拉选择</option>');
+                    for (var i in objs) {
+                        if (objs[i].host_location === '2') {
+                            $('#local_select').append("<option value=" + objs[i].id + ">" + objs[i].sn + "</option>");
+                        } else {
+                            $('#remote_select').append("<option value=" + objs[i].id + ">" + objs[i].sn + "</option>");
+                        }
+                    }
+                    form.render();
+                }
+            });
+
+            form.on('select(local_select)', function (obj) {
+                treeSelect.render({
+                    elem: '#local_path_select', type: 'POST', data: '/monitor/file/?id=' + obj.value,
+                    key: {id: 'id'},
+                    click: function (d) {
+                        console.log(d);
+                    }
+                });
+            });
+        });
+    </script>
 {% endblock %}

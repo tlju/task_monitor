@@ -1,12 +1,9 @@
 # -*- coding:utf-8 -*-
-import os, sys
+import chardet
 
-rootdir = 'D:/report/20180821'
-for dirpath, dirnames, filenames in os.walk(rootdir):
-    # print('Directory', dirpath)
-    for filename in filenames:
-        # print(filename)
-        with open(rootdir + '/' + filename,'r',encoding='gbk') as f:
-            for line in f:
-                if 'security' in line:
-                    print(filename)
+a = b"\346\262\241\346\234\211\346\217\217\350\277\260"
+
+fencoding = chardet.detect(a)
+print(fencoding)
+a = a.decode('utf-8')
+print(a)

@@ -20,6 +20,11 @@ class AdminSysParam(admin.ModelAdmin):
     ordering = ('id',)
 
 
+class AdminSysSetting(admin.ModelAdmin):
+    list_display = ('id', 'code', 'code_name', 'value', 'flag', 'memo')
+    ordering = ('id',)
+
+
 class AdminFunctions(admin.ModelAdmin):
     list_display = ('id', 'type', 'code', 'name', 'param', 'ret', 'status', 'remark')
     ordering = ('id',)
@@ -79,13 +84,14 @@ class AdminAdminInfo(admin.ModelAdmin):
 
 
 class AdminServer(admin.ModelAdmin):
-    list_display = ('id', 'sn', 'model', 'username', 'password', 'ipaddress', 'memo', 'user_profile')
+    list_display = ('id', 'sn', 'model', 'host_location', 'username', 'password', 'ipaddress', 'root_path', 'memo', 'user_profile')
     ordering = ('id',)
 
 
 admin.site.register(models.SysMenu, AdminSysMenu)
 admin.site.register(models.SysMapping, AdminSysMapping)
 admin.site.register(models.SysParam, AdminSysParam)
+admin.site.register(models.SysSetting, AdminSysSetting)
 admin.site.register(models.Functions, AdminFunctions)
 admin.site.register(models.FunctionsType, AdminFunctionsType)
 admin.site.register(models.FunctionsParam, AdminFunctionsParam)
