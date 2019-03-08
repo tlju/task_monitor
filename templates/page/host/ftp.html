@@ -1,4 +1,10 @@
 {% extends 'template.html' %}
+{% block head_js %}
+    <link rel="stylesheet" href="/static/lib/layui/layuiextend/ztree/css/ztree/metro/ztree.css">
+    <link rel="stylesheet" href="/static/lib/layui/layuiextend/ztree/css/treeselect.css">
+    <script type="text/javascript" src="/static/lib/layui/layuiextend/ztree/js/ztree.js"></script>
+    <script type="text/javascript" src="/static/lib/layui/layuiextend/ztree/js/treeselect.js"></script>
+{% endblock %}
 {% block body %}
     <div class="layui-card">
         <div class="layui-card-header">
@@ -24,7 +30,7 @@
                     </div>
                     <div class="layui-col-md1 layui-bg-gray"><label class="layui-form-label">本地路径</label></div>
                     <div class="layui-col-md3">
-                        <input type="text" id="local_path_select" lay-filter="local_path_select" placeholder="选择路径" class="layui-input">
+                        <input type="text" id="local_path_select" lay-filter="local_path_select" placeholder="选择路径" class="layui-input layui-input-treeselect ztree">
                     </div>
                     <div class="layui-col-md1 layui-bg-gray"><label class="layui-form-label">远程服务器</label></div>
                     <div class="layui-col-md1">
@@ -52,9 +58,9 @@
         </div>
     </div>
     <script type="application/javascript">
-        layui.config({base: '/static/js/',});
-        layui.use(['form', 'table', 'treeSelect'], function () {
-            var form = layui.form, table = layui.table, layer = layui.layer, treeSelect = layui.treeSelect, $ = layui.$;
+        layui.config({base: '/static/lib/layui/layuiextend/ztree/js/',});
+        layui.use(['form', 'table', 'treeselect'], function () {
+            var form = layui.form, table = layui.table, layer = layui.layer, treeselect = layui.treeselect, $ = layui.$;
             var table_1 = table.render({
                 elem: '#table_one',
                 height: 'full-290',
@@ -100,6 +106,54 @@
                         console.log(d);
                     }
                 });
+            });
+
+            datas = [{
+                "children": [{"children": [], "id": "c536000c524742b0ae1929387515f46d", "name": "组织管理"}, {
+                    "children": [],
+                    "id": "be7187ceefb211e7a2360a0027000038",
+                    "name": "字典管理"
+                }], "id": "7cfa8d7defb211e7a2360a0027000038", "name": "资源管理"
+            }, {
+                "children": [{
+                    "children": [{"children": [], "id": "e60ef4d2f75811e78abf0a002700001d", "name": "模块新增"}, {
+                        "children": [],
+                        "id": "514ab49ef75911e78abf0a002700001d",
+                        "name": "模块修改"
+                    }, {"children": [], "id": "70119b90f75911e78abf0a002700001d", "name": "模块删除"}], "id": "cab4c933f6d411e78abf0a002700001d", "name": "模块管理"
+                }, {
+                    "children": [{"children": [], "id": "b7ce7896f5f111e78abf0a002700001d", "name": "菜单新增"}, {
+                        "children": [],
+                        "id": "06fd8633f5f211e78abf0a002700001d",
+                        "name": "菜单修改"
+                    }, {"children": [], "id": "32c15082f5f211e78abf0a002700001d", "name": "菜单删除"}], "id": "f287d403efb111e7a2360a0027000038", "name": "菜单管理"
+                }, {
+                    "children": [{"children": [], "id": "065fa50370284f16add71206e6de8add", "name": "菜单赋值"}, {
+                        "children": [],
+                        "id": "f6a0e61932564c89bdc47d60261c8a85",
+                        "name": "权限赋值"
+                    }, {"children": [], "id": "357ff499f07c11e7a2360a0027000038", "name": "用户新增"}, {
+                        "children": [],
+                        "id": "5ea59df3f07f11e7a2360a0027000038",
+                        "name": "用户修改"
+                    }, {"children": [], "id": "357ff499f07c11e7a2360a0027000030", "name": "用户删除"}], "id": "26831a69efb211e7a2360a0027000038", "name": "用户管理"
+                }, {"children": [], "id": "9d10034226f34e36a23ba2b482af2fa9", "name": "日志管理"}, {
+                    "children": [{
+                        "children": [],
+                        "id": "b4feb81d67954c28820a432b8eb15e83",
+                        "name": "权限新增"
+                    }, {"children": [], "id": "0f9b575a090547afab160b573f593dd4", "name": "权限修改"}, {
+                        "children": [],
+                        "id": "0dfa92bf02ce423da15e0ff7c4d8bc6a",
+                        "name": "权限删除"
+                    }, {"children": [], "id": "cbc0f7eec9434180bede1aabbdacfb1e", "name": "权限赋权"}], "id": "d1422d69c1ec4be4a368f768ae116328", "name": "权限管理"
+                }], "id": "28c3ef4eefb111e7a2360a0027000038", "name": "系统管理"
+            }, {"children": [], "id": "35f6df58f07e11e7a2360a0027000038", "name": "首页"}];
+
+            treeselect.render({
+                elem: '#local_path_select',
+                data: datas,
+                method: 'GET'
             });
         });
     </script>

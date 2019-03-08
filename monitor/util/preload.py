@@ -1,8 +1,8 @@
 # -*- coding:utf-8 -*-
 from django.core.cache import cache
 from monitor.models import *
-from monitor.recordLog import RecordLog
-import queue, schedule
+from monitor.util.recordLog import RecordLog
+import queue
 
 q = queue.PriorityQueue()  # 任务优先队列，最低优先
 logger = RecordLog().getlog()
